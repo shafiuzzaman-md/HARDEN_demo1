@@ -1325,8 +1325,8 @@ Demo1VariableInit (
   //
   //Status = gBS->LocateProtocol (&gDemo1AccessKeyProtocolGuid, NULL, (VOID **)&AccessKeyProtocol);
   if (EFI_ERROR (Status) || (AccessKeyProtocol == NULL)) {
-    DEBUG ((DEBUG_ERROR, "%a: Could not locate RNG prototocol, Status = %r\n", 
-      __FUNCTION__, Status));
+    // // DEBUG ((DEBUG_ERROR, "%a: Could not locate RNG prototocol, Status = %r\n", 
+    // //   __FUNCTION__, Status));
     return Status;
   }
 
@@ -1365,8 +1365,8 @@ Demo1_Variable_Unload (
   IN EFI_HANDLE                       ImageHandle
   )
 {
-  gST->RuntimeServices->GetAccessVariable = NULL;
-  gST->RuntimeServices->SetAccessVariable = NULL;
+  //gST->RuntimeServices->GetAccessVariable = NULL;
+  //gST->RuntimeServices->SetAccessVariable = NULL;
   FreePool(mineVariableModuleGlobal);
   return EFI_SUCCESS;
 }
@@ -1376,7 +1376,7 @@ int main(){
   EFI_HANDLE                       ImageHandle;
   EFI_SYSTEM_TABLE                 *SystemTable;
   klee_make_symbolic(&ImageHandle, sizeof(ImageHandle), "ImageHandle");
-  klee_make_symbolic(SystemTable, sizeof(*SystemTable), "SystemTable");
+  klee_make_symbolic(&SystemTable, sizeof(SystemTable), "SystemTable");
   Demo1VariableInit(ImageHandle, SystemTable);
   
   return 0;
