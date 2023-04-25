@@ -132,7 +132,7 @@ VOID InsertLast (
   @retval TRUE                    The key is valid and exists in the chain
   @retval FALSE                   The key is invalid or does not exist in the chain
 **/
-BOOLEAN  (
+BOOLEAN DoesKeyExist (
   DEMO1_ACCESS_KEY                    *access_key
   )
 {
@@ -194,8 +194,8 @@ Demo1AccessKeyInit (
   //
   Status = gBS->LocateProtocol (&gEfiRngProtocolGuid, NULL, (VOID **)&RngProtocol);
   if (EFI_ERROR (Status) || (RngProtocol == NULL)) {
-    DEBUG ((DEBUG_ERROR, "%a: Could not locate RNG prototocol, Status = %r\n", 
-      __FUNCTION__, Status));
+    //DEBUG ((DEBUG_ERROR, "%a: Could not locate RNG prototocol, Status = %r\n", 
+    //  __FUNCTION__, Status));
     return Status;
   }
 
@@ -205,35 +205,37 @@ Demo1AccessKeyInit (
   masterKey = AllocatePool(sizeof(DEMO1_ACCESS_KEY));
   Status = Demo1GenerateAccessKey(&gDemo1_Access_Key_Protocol, NULL, TRUE, masterKey);
   if (EFI_ERROR (Status)) {
-    DEBUG ((DEBUG_ERROR, "%a: Could not generate master key, Status = %r\n",
-      __FUNCTION__, Status));
+   // DEBUG ((DEBUG_ERROR, "%a: Could not generate master key, Status = %r\n",
+    //  __FUNCTION__, Status));
     return Status;
   }
 
   //
   // Create an event using event group gDemo1AccessKeyReadyToLockGuid.
   //
-  Status = gBS->CreateEventEx(
-    EVT_NOTIFY_SIGNAL,                                      // Type
-    TPL_NOTIFY,                                             // NotifyTpl
-    ReadyToLock,                                            // NotifyFunction
-    NULL,                                                   // NotifyContext
-    &gDemo1AccessKeyReadyToLockGuid,                        // EventGroup
-    &(gDemo1_Access_Key_Protocol.Demo1_Ready_To_Lock_Event) // Event
-  );
+   ///////commented out for gcc run///////// 
+  // Status = gBS->CreateEventEx(
+  //   EVT_NOTIFY_SIGNAL,                                      // Type
+  //   TPL_NOTIFY,                                             // NotifyTpl
+  //   ReadyToLock,                                            // NotifyFunction
+  //   NULL,                                                  // NotifyContext
+  //   &gDemo1AccessKeyReadyToLockGuid,                        // EventGroup
+  //   &(gDemo1_Access_Key_Protocol.Demo1_Ready_To_Lock_Event) // Event
+  // );
 
   //
   // Install Access Key Protocol
   //
-  Status = gBS->InstallProtocolInterface (
-    &ImageHandle,
-    &gDemo1AccessKeyProtocolGuid,
-    EFI_NATIVE_INTERFACE,
-    &gDemo1_Access_Key_Protocol
-    );
+  ///////commented out for gcc run///////// 
+  // Status = gBS->InstallProtocolInterface (
+  //   &ImageHandle,
+  //   &gDemo1AccessKeyProtocolGuid,
+  //   EFI_NATIVE_INTERFACE,
+  //   &gDemo1_Access_Key_Protocol
+  //   );
   if (EFI_ERROR (Status)) {
-    DEBUG ((DEBUG_ERROR, "%a: Could not install Access Key Protocol, Status = %r\n",
-      __FUNCTION__, Status));
+   // DEBUG ((DEBUG_ERROR, "%a: Could not install Access Key Protocol, Status = %r\n",
+    //  __FUNCTION__, Status));
     return Status;
   }
 
@@ -255,11 +257,11 @@ Demo1AccessKeyUnload (
   )
 {
   EFI_STATUS Status = EFI_SUCCESS;
-  Status = gBS->UninstallProtocolInterface (
-    &ImageHandle,
-    &gDemo1AccessKeyProtocolGuid,
-    EFI_NATIVE_INTERFACE
-  );
+  // Status = gBS->UninstallProtocolInterface (
+  //   &ImageHandle,
+  //   &gDemo1AccessKeyProtocolGuid,
+  //   EFI_NATIVE_INTERFACE
+  // );
   FreePool(masterKey);
   return Status;
 }
@@ -357,7 +359,7 @@ Demo1ValidateAccessKey (
   if (AccessKeyPtr == NULL) {
     return EFI_INVALID_PARAMETER;
   }
-
+  // It is not checking whether the key is present in the Key chain or not. Just checking with the given parameter
   // Check key permissions.
   if ( WriteAccess && (AccessKeyPtr->access_key_store[1] == ((ACCESS_KEY_MAGIC << MAGIC_SIZE) | READ_ACCESS ) ) ) {
     return EFI_INVALID_PARAMETER;
@@ -365,4 +367,8 @@ Demo1ValidateAccessKey (
 
   *Result = DoesKeyExist(AccessKeyPtr);
   return EFI_SUCCESS;
+}
+
+int main(){
+  return 0; 
 }

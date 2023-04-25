@@ -14,18 +14,18 @@ Revision History: 0.1
 #ifndef _DEMO1_ACCESS_Key_H_
 #define _DEMO1_ACCESS_Key_H_
 
-#include <Uefi.h>
-#include <Library/DebugLib.h>
-#include <Library/BaseLib.h>
-#include <Library/BaseMemoryLib.h>
-#include <Library/UefiDriverEntryPoint.h>
-#include <Library/UefiBootServicesTableLib.h>
-#include <Library/MemoryAllocationLib.h>
-#include <Library/PrintLib.h>
-#include <Library/UefiLib.h>
 
-#include <Library/RngLib.h>
-#include <Protocol/Rng.h>
+#include  "Uefi.h"
+#include  "Library/BaseLib.h"
+#include  "Library/BaseMemoryLib.h"
+#include  "Library/UefiDriverEntryPoint.h"
+#include  "Library/UefiBootServicesTableLib.h"
+#include  "Library/MemoryAllocationLib.h"
+#include  "Library/PrintLib.h"
+#include  "Library/UefiLib.h"
+
+#include "Library/RngLib.h"
+#include "Protocol/Rng.h"
 
 ///
 /// Global GUIDs - for reference: values are stored in EmulatorPkg.dec
@@ -38,9 +38,9 @@ typedef struct _Demo1_Access_Key_PROTOCOL Demo1_Access_Key_PROTOCOL;
 #define KEYSIZE   16
 
 #define ACCESS_KEY_MAGIC      0xDEC0DEBABB1E
-#define MAGIC_SIZE            0x10
-#define WRITE_ACCESS          0x7E11
-#define READ_ACCESS           0x10AD
+#define MAGIC_SIZE            0x10 //16
+#define WRITE_ACCESS          0x7E11 //32273
+#define READ_ACCESS           0x10AD //4269
 #define NO_ACCESS             0x0000
 
 ///
