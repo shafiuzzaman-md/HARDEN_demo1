@@ -12,6 +12,8 @@ Revision History: 0.1
 **/
 
 #include "Demo1_Variable.h"
+#include "../Demo1_Access_Key/Demo1_Access_Key.h"
+#include "klee/klee.h"
 
 // GLOBAL
 EFI_GUID gAuthVarGUID       = { 0xaaf32c78, 0x947b, 0x439a, { 0xa1, 0x80, 0x2e, 0x14, 0x4e, 0xc3, 0x77, 0x92 } };
@@ -32,6 +34,7 @@ VARIABLE_STORE_HEADER  *mineNvVariableCache = NULL;
 /// The memory entry used for variable statistics data.
 ///
 VARIABLE_INFO_ENTRY  *gVarInfo = NULL;
+
 
 /**
   This code checks if variable header is valid or not.
@@ -301,7 +304,11 @@ mineInitEmuNonVolatileVariableStore (
   //
   // Allocate memory for variable store.
   //
-    VariableStore = (VARIABLE_STORE_HEADER *)AllocateRuntimePool (VariableStoreLength); // 32KB
+
+klee_make_symbolic(&VariableStore, sizeof(VariableStore), "VariableStore");
+
+VariableStore = (VARIABLE_STORE_HEADER *)malloc(VariableStoreLength);
+  //  VariableStore = (VARIABLE_STORE_HEADER *)AllocateRuntimePool (VariableStoreLength); // 32KB
     if (VariableStore == NULL) {
       return EFI_OUT_OF_RESOURCES;
     }
@@ -730,15 +737,15 @@ UpdateAccessVariable (
   UINTN                               DataOffset;
   AUTHENTICATED_VARIABLE_HEADER       *AuthVariable;
   BOOLEAN                             AuthFormat;
-
+  
   if (AccessKey == NULL) {
+  
     return EFI_INVALID_PARAMETER;
   }
 
   if ((AccessKey->access_key_store[1] & WRITE_ACCESS) != WRITE_ACCESS){
     return EFI_WRITE_PROTECTED;
   }
-
   AuthFormat = mineVariableModuleGlobal->VariableGlobal.AuthFormat;
   if ((CacheVariable->CurrPtr == NULL))
   {
@@ -931,7 +938,7 @@ UpdateAccessVariable (
   NextVariable->Attributes = Attributes & (~EFI_VARIABLE_APPEND_WRITE);
 
   VarNameOffset = GetAccessVariableHeaderSize (AuthFormat);
-  VarNameSize   = StrSize (VariableName);
+  VarNameSize   = strlen (VariableName);
   CopyMem ((UINT8 *)((UINTN)NextVariable + VarNameOffset), VariableName, VarNameSize );
   VarDataOffset = VarNameOffset + VarNameSize + GET_PAD_SIZE (VarNameSize);
 
@@ -1165,6 +1172,9 @@ mineVariableServiceSetVariable (
   BOOLEAN                         AuthFormat;
   BOOLEAN                         ValidKey;
 
+  mineVariableModuleGlobal = (struct VARIABLE_MODULE_GLOBAL*)malloc(sizeof( VARIABLE_MODULE_GLOBAL))  ;
+  klee_make_symbolic(mineVariableModuleGlobal, sizeof(VARIABLE_MODULE_GLOBAL), "mineVariableModuleGlobal");
+ 
   AuthFormat = mineVariableModuleGlobal->VariableGlobal.AuthFormat;
 
   // Check input parameters.
@@ -1177,14 +1187,14 @@ mineVariableServiceSetVariable (
   }
 
   PayloadSize = DataSize;
-  if ((UINTN)(~0) - PayloadSize < StrSize (VariableName)) {
+  if ((UINTN)(~0) - PayloadSize < strlen (VariableName)) {
     // Prevent whole variable size overflow
     return EFI_INVALID_PARAMETER;
   }
 
-  if (StrSize (VariableName) + PayloadSize > mineVariableModuleGlobal->MaxVariableSize - GetAccessVariableHeaderSize (AuthFormat)) {
-    DEBUG ((DEBUG_ERROR, "%a: Failed to set variable '%s' with Guid %g\n", __FUNCTION__, VariableName, VendorGuid));
-    DEBUG ((DEBUG_ERROR,"NameSize(0x%x) + PayloadSize(0x%x) > " "MaxVariableSize(0x%x) - HeaderSize(0x%x)\n", StrSize (VariableName), PayloadSize, GetAccessVariableHeaderSize (AuthFormat)));
+  if (strlen (VariableName) + PayloadSize > mineVariableModuleGlobal->MaxVariableSize - GetAccessVariableHeaderSize (AuthFormat)) {
+   // DEBUG ((DEBUG_ERROR, "%a: Failed to set variable '%s' with Guid %g\n", __FUNCTION__, VariableName, VendorGuid));
+    //DEBUG ((DEBUG_ERROR,"NameSize(0x%x) + PayloadSize(0x%x) > " "MaxVariableSize(0x%x) - HeaderSize(0x%x)\n", strlen (VariableName), PayloadSize, GetAccessVariableHeaderSize (AuthFormat)));
     return EFI_INVALID_PARAMETER;
   }
 
@@ -1198,13 +1208,13 @@ mineVariableServiceSetVariable (
   }
   mineVariableModuleGlobal->NonVolatileLastVariableOffset = (UINTN)NextVariable - (UINTN)Point;
 
-  if (AccessKeyProtocol->Demo1ValidateAccessKey(AccessKeyProtocol, NULL, AccessKey, TRUE, &ValidKey) != EFI_SUCCESS){
+  if (Demo1ValidateAccessKey(AccessKeyProtocol, NULL, AccessKey, TRUE, &ValidKey) != EFI_SUCCESS){
     return EFI_INVALID_PARAMETER;
   }
   if (!ValidKey){
     return EFI_INVALID_PARAMETER;
   }
-
+  klee_assert(0);
   FindAccessVariable (VariableName, VendorGuid, &Variable, &mineVariableModuleGlobal->VariableGlobal, TRUE);
   Status = UpdateAccessVariable (VariableName, VendorGuid, AccessKey, Data, DataSize, Attributes, 0, 0, &Variable, NULL);
   return Status;
@@ -1254,7 +1264,7 @@ mineVariableServiceGetVariable (
     return EFI_NOT_FOUND;
   }
 
-  if (AccessKeyProtocol->Demo1ValidateAccessKey(AccessKeyProtocol, NULL, AccessKey, FALSE, &ValidKey) != EFI_SUCCESS){
+  if (Demo1ValidateAccessKey(AccessKeyProtocol, NULL, AccessKey, FALSE, &ValidKey) != EFI_SUCCESS){
     return EFI_INVALID_PARAMETER;
   }
   if (!ValidKey){
@@ -1323,7 +1333,7 @@ Demo1VariableInit (
   //
   // Get Access Key protocol 
   //
-  //Status = gBS->LocateProtocol (&gDemo1AccessKeyProtocolGuid, NULL, (VOID **)&AccessKeyProtocol);
+ // Status = gBS->LocateProtocol (&gDemo1AccessKeyProtocolGuid, NULL, (VOID **)&AccessKeyProtocol);
   if (EFI_ERROR (Status) || (AccessKeyProtocol == NULL)) {
     // // DEBUG ((DEBUG_ERROR, "%a: Could not locate RNG prototocol, Status = %r\n", 
     // //   __FUNCTION__, Status));
@@ -1372,12 +1382,66 @@ Demo1_Variable_Unload (
 }
 
 
+// int main(){
+//   // EFI_HANDLE                       ImageHandle;
+//   // EFI_SYSTEM_TABLE                 *SystemTable;
+//   // klee_make_symbolic(&ImageHandle, sizeof(ImageHandle), "ImageHandle");
+//   // klee_make_symbolic(&SystemTable, sizeof(SystemTable), "SystemTable");
+//   // Demo1VariableInit(ImageHandle, SystemTable);
+
+//   CHAR16                          *VariableName;
+//   EFI_GUID                        *VendorGuid;
+ 
+//   VOID                            *Data;
+//   UINTN                           DataSize;
+//   UINT32                          Attributes;
+//   UINT32                          KeyIndex;
+//   UINT64                          MonotonicCount;
+//   ACCESS_VARIABLE_POINTER_TRACK   *CacheVariable;
+//   EFI_TIME                        *TimeStamp;
+
+//    DEMO1_ACCESS_KEY  *AccessKey;
+//    AccessKey = (struct DEMO1_ACCESS_KEY*)malloc(sizeof( DEMO1_ACCESS_KEY))  ;
+//    klee_make_symbolic(AccessKey, sizeof(DEMO1_ACCESS_KEY), "AccessKey");
+//    klee_assume(AccessKey->access_key_store[1] == 0xDEC0DEBABB1E10AD);
+
+//   klee_make_symbolic(&VariableName, sizeof(VariableName), "VariableName");
+//   klee_make_symbolic(&VendorGuid, sizeof(VendorGuid), "VendorGuid");
+ 
+//   klee_make_symbolic(&Data, sizeof(VariableName), "VariableName");
+//   klee_make_symbolic(&DataSize, sizeof(DataSize), "DataSize");
+//   klee_make_symbolic(&Attributes, sizeof(Attributes), "Attributes");
+//   klee_make_symbolic(&KeyIndex, sizeof(KeyIndex), "KeyIndex");
+//   klee_make_symbolic(&MonotonicCount, sizeof(MonotonicCount), "MonotonicCount");
+//   klee_make_symbolic(&CacheVariable, sizeof(CacheVariable), "CacheVariable");
+//   klee_make_symbolic(&TimeStamp, sizeof(TimeStamp), "TimeStamp");
+//   EFI_STATUS status;
+//   status = UpdateAccessVariable(VariableName, VendorGuid, AccessKey, Data, DataSize, Attributes, KeyIndex, MonotonicCount, CacheVariable, TimeStamp);
+//   klee_assert(status == EFI_WRITE_PROTECTED);
+//   return 0;
+// }
+
+
 int main(){
-  EFI_HANDLE                       ImageHandle;
-  EFI_SYSTEM_TABLE                 *SystemTable;
-  klee_make_symbolic(&ImageHandle, sizeof(ImageHandle), "ImageHandle");
-  klee_make_symbolic(&SystemTable, sizeof(SystemTable), "SystemTable");
-  Demo1VariableInit(ImageHandle, SystemTable);
-  
+  CHAR16                           *VariableName;
+  EFI_GUID                         *VendorGuid;
+  UINT32                           Attributes;
+  UINTN                            DataSize;
+  VOID                             *Data;
+
+  DEMO1_ACCESS_KEY  *AccessKey;
+  AccessKey = (struct DEMO1_ACCESS_KEY*)malloc(sizeof( DEMO1_ACCESS_KEY))  ;
+  klee_make_symbolic(AccessKey, sizeof(DEMO1_ACCESS_KEY), "AccessKey");
+  klee_assume(AccessKey->access_key_store[1] == 0xDEC0DEBABB1E10AD);
+
+  klee_make_symbolic(&VariableName, sizeof(VariableName), "VariableName");
+  klee_make_symbolic(&VendorGuid, sizeof(VendorGuid), "VendorGuid");
+ 
+  klee_make_symbolic(&Data, sizeof(VariableName), "VariableName");
+  klee_make_symbolic(&DataSize, sizeof(DataSize), "DataSize");
+  klee_make_symbolic(&Attributes, sizeof(Attributes), "Attributes");
+  EFI_STATUS status;
+  status = mineVariableServiceSetVariable(VariableName, VendorGuid, Attributes, AccessKey,  DataSize,  Data);
+  klee_assert(status == EFI_INVALID_PARAMETER);
   return 0;
 }
