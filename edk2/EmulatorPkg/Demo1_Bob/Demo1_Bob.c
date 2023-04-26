@@ -12,7 +12,7 @@ Revision History: 0.1
 **/
 
 #include "Demo1_Bob.h"
-#include <Protocol/LoadedImage.h>
+#include "Protocol/LoadedImage.h"
 
 // PRODUCED
 Demo1_Bob_PROTOCOL
@@ -96,19 +96,19 @@ Demo1BobTimerHandler (
   //
   // Get Alice_Mode Variable
   //
-  EFI_STATUS Status = gST->RuntimeServices->GetAccessVariable (
-    ALICEMODE_VARNAME,
-    &gAliceVariableGuid,
-    NULL,
-    &bobKey,
-    &BufferSize,
-    &Mode
-  );
-  if (EFI_ERROR (Status)) {
-    DEBUG ((DEBUG_ERROR, "%a: variable '%s' could not be read - bailing!\n", 
-      __FUNCTION__, ALICEMODE_VARNAME));
-    return;
-  }
+  // EFI_STATUS Status = gST->RuntimeServices->GetAccessVariable (
+  //   ALICEMODE_VARNAME,
+  //   &gAliceVariableGuid,
+  //   NULL,
+  //   &bobKey,
+  //   &BufferSize,
+  //   &Mode
+  // );
+  // if (EFI_ERROR (Status)) {
+  //   DEBUG ((DEBUG_ERROR, "%a: variable '%s' could not be read - bailing!\n", 
+  //     __FUNCTION__, ALICEMODE_VARNAME));
+  //   return;
+  // }
 
   //
   // Perform Run Action
@@ -132,19 +132,19 @@ Demo1BobTimerHandler (
       //
       // Change to 5 second timer
       //
-      Status = gBS->SetTimer (
-        Demo1_Bob_PeriodicTimer,        // Event
-        TimerPeriodic,                  // Type
-        EFI_TIMER_PERIOD_SECONDS(5));   // Period
-      if (EFI_ERROR (Status)) {
-        DEBUG ((DEBUG_ERROR, "%a:  could not change timer - bailing!\n", 
-          __FUNCTION__));
-        ASSERT_EFI_ERROR (EFI_ABORTED);
-      }
-      //
+      // Status = gBS->SetTimer (
+      //   Demo1_Bob_PeriodicTimer,        // Event
+      //   TimerPeriodic,                  // Type
+      //   EFI_TIMER_PERIOD_SECONDS(5));   // Period
+      // if (EFI_ERROR (Status)) {
+      //   DEBUG ((DEBUG_ERROR, "%a:  could not change timer - bailing!\n", 
+      //     __FUNCTION__));
+      //   ASSERT_EFI_ERROR (EFI_ABORTED);
+      // }
+      // //
       // Notify ReadyToRun
       //
-      gBS->SignalEvent(AliceProtocol->Demo1_Ready_To_Run_Event);
+      //gBS->SignalEvent(AliceProtocol->Demo1_Ready_To_Run_Event);
     }
   }
 }
@@ -170,19 +170,19 @@ Demo1BobInit (
   UINTN             BufferSize = sizeof(Mode);
 
   // Open the LoadImage protocol to get access to the base and size.
-  Status = gBS->OpenProtocol (
-    ImageHandle,
-    &gEfiLoadedImageProtocolGuid,
-    (VOID **)&gLoadImage,
-    gImageHandle,
-    NULL,
-    EFI_OPEN_PROTOCOL_GET_PROTOCOL
-    );
+  // Status = gBS->OpenProtocol (
+  //   ImageHandle,
+  //   &gEfiLoadedImageProtocolGuid,
+  //   (VOID **)&gLoadImage,
+  //   gImageHandle,
+  //   NULL,
+  //   EFI_OPEN_PROTOCOL_GET_PROTOCOL
+  //   );
 
   //
   // Get Access Key protocol
   //
-  Status = gBS->LocateProtocol (&gDemo1AccessKeyProtocolGuid, NULL, (VOID **)&AccessKeyProtocol);
+ // Status = gBS->LocateProtocol (&gDemo1AccessKeyProtocolGuid, NULL, (VOID **)&AccessKeyProtocol);
   if (EFI_ERROR (Status) || (AccessKeyProtocol == NULL)) {
     DEBUG ((DEBUG_ERROR, "%a: Could not locate Access Key protocol, Status = %r\n", 
       __FUNCTION__, Status));
@@ -202,7 +202,7 @@ Demo1BobInit (
   //
   // Get Alice Driver Protocol
   //
-  Status = gBS->LocateProtocol(&gDemo1AliceProtocolGuid, NULL, (VOID *)&AliceProtocol);
+  //Status = gBS->LocateProtocol(&gDemo1AliceProtocolGuid, NULL, (VOID *)&AliceProtocol);
   if (EFI_ERROR (Status) || (AliceProtocol == NULL)) {
     DEBUG ((DEBUG_ERROR, "%a: Could not locate Alice protocol, Status = %r\n", 
       __FUNCTION__, Status));
@@ -212,14 +212,14 @@ Demo1BobInit (
   //
   // Get Alice Driver Mode
   //
-  Status = SystemTable->RuntimeServices->GetAccessVariable (
-    ALICEMODE_VARNAME,
-    &gAliceVariableGuid,
-    NULL,
-    &bobKey,
-    &BufferSize,
-    &Mode
-  );
+  // Status = SystemTable->RuntimeServices->GetAccessVariable (
+  //   ALICEMODE_VARNAME,
+  //   &gAliceVariableGuid,
+  //   NULL,
+  //   &bobKey,
+  //   &BufferSize,
+  //   &Mode
+  // );
   if (EFI_ERROR (Status)) {
     DEBUG ((DEBUG_ERROR, "%a: variable '%s' could not be read - bailing!\n", 
       __FUNCTION__, ALICEMODE_VARNAME));
@@ -244,13 +244,13 @@ Demo1BobInit (
   //
   // Create a timer event 
   //
-  Status = gBS->CreateEvent (
-    EVT_TIMER | EVT_NOTIFY_SIGNAL,  // Type
-    TPL_NOTIFY,                     // NotifyTpl
-    Demo1BobTimerHandler,           // NotifyFunction
-    NULL,                           // NotifyContext
-    &Demo1_Bob_PeriodicTimer        // Event
-  );
+  // Status = gBS->CreateEvent (
+  //   EVT_TIMER | EVT_NOTIFY_SIGNAL,  // Type
+  //   TPL_NOTIFY,                     // NotifyTpl
+  //   Demo1BobTimerHandler,           // NotifyFunction
+  //   NULL,                           // NotifyContext
+  //   &Demo1_Bob_PeriodicTimer        // Event
+  // );
   if (EFI_ERROR (Status)) {
     DEBUG ((DEBUG_ERROR, "%a: Could not create event timer, Status = %r\n", 
       __FUNCTION__, Status));
@@ -260,23 +260,23 @@ Demo1BobInit (
   //
   // Start timer
   //
-  Status = gBS->SetTimer (
-    Demo1_Bob_PeriodicTimer,        // Event
-    TimerPeriodic,                  // Type
-    EFI_TIMER_PERIOD_SECONDS(1));   // Period
-  if (EFI_ERROR (Status)) {
-    return Status;
-  }
+  // Status = gBS->SetTimer (
+  //   Demo1_Bob_PeriodicTimer,        // Event
+  //   TimerPeriodic,                  // Type
+  //   EFI_TIMER_PERIOD_SECONDS(1));   // Period
+  // if (EFI_ERROR (Status)) {
+  //   return Status;
+  // }
 
   //
   // Install Bob Protocol
   //
-  Status = gBS->InstallProtocolInterface (
-    &ImageHandle,
-    &gDemo1BobProtocolGuid,
-    EFI_NATIVE_INTERFACE,
-    &gDemo1_Bob_Protocol
-  );
+  // Status = gBS->InstallProtocolInterface (
+  //   &ImageHandle,
+  //   &gDemo1BobProtocolGuid,
+  //   EFI_NATIVE_INTERFACE,
+  //   &gDemo1_Bob_Protocol
+  // );
   if (EFI_ERROR (Status)) {
     return Status;
   }
@@ -299,11 +299,11 @@ Demo1BobUnload (
   )
 {
   EFI_STATUS Status = EFI_SUCCESS;
-  Status = gBS->UninstallProtocolInterface(
-    &ImageHandle,
-    &gDemo1BobProtocolGuid,
-    EFI_NATIVE_INTERFACE
-  );
+  // Status = gBS->UninstallProtocolInterface(
+  //   &ImageHandle,
+  //   &gDemo1BobProtocolGuid,
+  //   EFI_NATIVE_INTERFACE
+  // );
   return Status;
 }
 
@@ -357,4 +357,15 @@ Demo1BobDataProvider(
   *Dest = Storage;
 
   return EFI_SUCCESS;
+}
+
+
+int main(){
+  EFI_HANDLE                       ImageHandle;
+  EFI_SYSTEM_TABLE                 *SystemTable;
+  klee_make_symbolic(&ImageHandle, sizeof(ImageHandle), "ImageHandle");
+  klee_make_symbolic(&SystemTable, sizeof(SystemTable), "SystemTable");
+  Demo1BobInit(ImageHandle, SystemTable);
+  
+  return 0;
 }
