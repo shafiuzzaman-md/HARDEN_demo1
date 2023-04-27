@@ -1,0 +1,10 @@
+Summary of function Demo1_ValidateAccessKey
+
+<Bool !(rsi[7:0] == 0) && !((if rdi == 0xfffffffffffffff7 then (mem_2_4_48{UNINITIALIZED}[39:0] .. (if rdx == 0x1 then 0 else mem_1_1_8{UNINITIALIZED}) .. mem_0_3_8{UNINITIALIZED} .. (if rdx == 0xffffffffffffffff then 0 else mem_ffffffffffffffff_2_8{UNINITIALIZED})) else (if rdi == 0xfffffffffffffff8 then (mem_2_4_48{UNINITIALIZED} .. (if rdx == 0x1 then 0 else mem_1_1_8{UNINITIALIZED}) .. mem_0_3_8{UNINITIALIZED}) else 0xc0deb4be)) == 0xdec0debabb1e10ad) && (rdi == 0xfffffffffffffff7 || rdi == 0xfffffffffffffff8) && !(rdi == 0x0) && (rdx == 0x1 || rdx == 0xffffffffffffffff) && 0x1 <= rdx && x == 0x0 || 
+rsi[7:0] == 0 && !(rdi == 0x0) && (rdx == 0x1 || rdx == 0xffffffffffffffff) && 0x1 <= rdx && x == 0x0 || 
+(if rdi + 0x8 == 0xffffffffffffffff then (mem_2_4_48{UNINITIALIZED}[39:0] .. (if rdx == 0x1 then 0 else mem_1_1_8{UNINITIALIZED}) .. mem_0_3_8{UNINITIALIZED} .. (if rdx == 0xffffffffffffffff then 0 else mem_ffffffffffffffff_2_8{UNINITIALIZED})) else (if rdi + 0x8 == 0x0 then (mem_2_4_48{UNINITIALIZED} .. (if rdx == 0x1 then 0 else mem_1_1_8{UNINITIALIZED}) .. mem_0_3_8{UNINITIALIZED}) else 0xc0deb4be)) == 0xdec0debabb1e10ad && (rdi + 0x8 == 0x0 || rdi + 0x8 == 0xffffffffffffffff) && rdi + 0x8 <= 0xffffffffffffffff && !(rsi[7:0] == 0) && !(rdi == 0x0) && (rdx == 0x1 || rdx == 0xffffffffffffffff) && 0x1 <= rdx && x == 0x2 || 
+rdi == 0x0 && (rdx == 0x1 || rdx == 0xffffffffffffffff) && rdx <= 0xffffffffffffffff && 0x1 <= rdx && x == 0x2 || 
+rdx == 0x0 && x == 0x2>
+
+rdx == Result variable
+rdi == AccessKeyPointer variable

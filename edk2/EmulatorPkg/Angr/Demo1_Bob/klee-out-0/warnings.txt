@@ -1,0 +1,10 @@
+KLEE: WARNING: undefined reference to function: AllocatePool
+KLEE: WARNING: undefined reference to function: CopyMem
+KLEE: WARNING: undefined reference to function: DebugPrint
+KLEE: WARNING: undefined reference to function: DebugPrintEnabled
+KLEE: WARNING: undefined reference to function: DebugPrintLevelEnabled
+KLEE: WARNING: undefined reference to function: MultU64x32
+KLEE: WARNING: undefined reference to variable: gBS
+KLEE: WARNING: undefined reference to variable: gEfiLoadedImageProtocolGuid
+KLEE: WARNING: undefined reference to variable: gImageHandle
+KLEE: ERROR: Unable to load symbol(gBS) while initializing globals
