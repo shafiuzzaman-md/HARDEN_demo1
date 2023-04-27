@@ -13,7 +13,8 @@ Revision History: 0.1
 
 #include "Demo1_Bob.h"
 #include "Protocol/LoadedImage.h"
-
+#include "klee/klee.h"
+#include "../Demo1_Access_Key/Demo1_Access_Key.c"
 // PRODUCED
 Demo1_Bob_PROTOCOL
 gDemo1_Bob_Protocol = {
@@ -268,9 +269,9 @@ Demo1BobInit (
   //   return Status;
   // }
 
-  //
-  // Install Bob Protocol
-  //
+  
+  //Install Bob Protocol
+  
   // Status = gBS->InstallProtocolInterface (
   //   &ImageHandle,
   //   &gDemo1BobProtocolGuid,
@@ -331,29 +332,33 @@ Demo1BobDataProvider(
 
   // Used for comparison checks
   UINTN IAddress = (UINTN)Address;
+
+  klee_make_symbolic(&gLoadImage, sizeof(gLoadImage), "gLoadImage");
   UINTN IBase = (UINTN)gLoadImage->ImageBase;
+ 
   VOID *Storage = NULL;
 
   if (Dest == NULL ) {
     return EFI_INVALID_PARAMETER;
   }
-
+  // invalid memory range check
   if ( IAddress < IBase ) {
     return EFI_ACCESS_DENIED;
   }
-
+  
+  // invalid memory range check
   if ( IBase + gLoadImage->ImageSize < IAddress + Size ) {
     return EFI_ACCESS_DENIED;
   }
 
-  Storage = AllocatePool(Size);
+  Storage = (VOID*)malloc(Size);
 
   if ( Storage == NULL ) {
     return EFI_INVALID_PARAMETER;
   }
 
-  CopyMem( Storage, Address, Size);
-
+  memcpy( Storage, Address, Size);
+  klee_print_expr("Updated Access key:", (char *)Storage);
   *Dest = Storage;
 
   return EFI_SUCCESS;
@@ -361,11 +366,14 @@ Demo1BobDataProvider(
 
 
 int main(){
-  EFI_HANDLE                       ImageHandle;
-  EFI_SYSTEM_TABLE                 *SystemTable;
-  klee_make_symbolic(&ImageHandle, sizeof(ImageHandle), "ImageHandle");
-  klee_make_symbolic(&SystemTable, sizeof(SystemTable), "SystemTable");
-  Demo1BobInit(ImageHandle, SystemTable);
-  
+    UINTN *Address; 
+    UINTN Size = sizeof(DEMO1_ACCESS_KEY); 
+    DEMO1_ACCESS_KEY *bobKey= malloc(sizeof(DEMO1_ACCESS_KEY));
+    bobKey->access_key_store[1] = 0xDEC0DEBABB1E10AD; // Create Bob key with read access
+    //klee_make_symbolic(bobKey, sizeof(DEMO1_ACCESS_KEY), "bobKey");
+    //klee_assume(bobKey->access_key_store[1] == 0xDEC0DEBABB1E10AD);
+    klee_make_symbolic(&Address, sizeof(Address), "Address");
+    klee_print_expr("bobkey:", bobKey);
+    klee_assert(Demo1BobDataProvider(NULL, (VOID *)Address, (VOID **)&bobKey, Size) != EFI_SUCCESS);
   return 0;
 }
