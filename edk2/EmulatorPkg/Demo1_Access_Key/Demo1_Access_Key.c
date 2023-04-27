@@ -168,7 +168,7 @@ ReadyToLock(
   )
 {
   accessKeyLock = TRUE;
-  gBS->CloseEvent (Event);
+  //gBS->CloseEvent (Event);
 }
 
 /**
@@ -192,7 +192,7 @@ Demo1AccessKeyInit (
   //
   // Get Random Number Generator protocol
   //
-  Status = gBS->LocateProtocol (&gEfiRngProtocolGuid, NULL, (VOID **)&RngProtocol);
+ // Status = gBS->LocateProtocol (&gEfiRngProtocolGuid, NULL, (VOID **)&RngProtocol);
   if (EFI_ERROR (Status) || (RngProtocol == NULL)) {
     //DEBUG ((DEBUG_ERROR, "%a: Could not locate RNG prototocol, Status = %r\n", 
     //  __FUNCTION__, Status));
@@ -367,8 +367,4 @@ Demo1ValidateAccessKey (
 
   *Result = DoesKeyExist(AccessKeyPtr);
   return EFI_SUCCESS;
-}
-
-int main(){
-  return 0; 
 }
