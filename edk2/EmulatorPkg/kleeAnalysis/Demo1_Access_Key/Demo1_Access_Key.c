@@ -1,0 +1,417 @@
+/** @file
+
+Module Name:
+
+  Demo1_Access_Key.c
+
+Abstract:
+
+  Provides protocol for generating/validating an access key
+
+Revision History: 0.1
+**/
+
+#include "Demo1_Access_Key.h"
+
+// PRODUCED
+Demo1_Access_Key_PROTOCOL
+gDemo1_Access_Key_Protocol = {
+  Demo1GenerateAccessKey,
+  Demo1ValidateAccessKey,
+};
+
+// CONSUMED
+EFI_RNG_PROTOCOL  *RngProtocol = NULL;
+DEMO1_ACCESS_KEY *masterKey = NULL;
+
+// GLOBALS
+BOOLEAN accessKeyLock = FALSE;
+
+// ACCESS KEY STORAGE
+typedef struct _LINK LINK;
+
+struct _LINK { // doubly linked list of keys
+  DEMO1_ACCESS_KEY access_key;
+  LINK *next;
+  LINK *prev;
+};
+
+LINK *head = NULL;
+LINK *last = NULL;
+LINK *keychain=NULL;
+
+///
+/// Utility Functions for keychain
+///
+
+/**
+  Utility function indicating if the list is empty
+
+  @retval TRUE                    The keychain list is empty
+  @retval FALSE                   The keychain list is non-empty
+**/
+BOOLEAN IsKeychainEmpty(
+  VOID
+  )
+{
+   return head == NULL;
+}
+
+/**
+  Utility function indicating the length of the list
+
+  @retval UINTN                   The number of entries in the list
+**/
+UINTN KeychainLength (
+  VOID
+  )
+{
+  UINTN length = 0;
+  LINK *current;
+  for(current = head; current != NULL; current = current->next){
+    length++;
+  }
+  return length;
+}
+
+/**
+  Inserts a link at the head of the list
+
+  @param[in]  access_key          Pointer to a valid DEMO1_ACCESS_KEY structure
+
+  @retval VOID
+**/
+void InsertFirst (
+  DEMO1_ACCESS_KEY                    *access_key
+  )
+{
+  LINK *link = malloc(sizeof(LINK)); // create a link
+  assert (link != NULL);
+  memcpy(&link->access_key, access_key, KEYSIZE);
+
+  if (IsKeychainEmpty()) { // make it the last link
+    last = link;
+  } else {
+    head->prev = link; // update first prev link
+  }
+  link->prev = NULL;
+  link->next = head; // point it to old first link
+  head = link; // point first to new first link
+}
+
+/**
+  Inserts a link at the tail of the list
+
+  @param[in]  access_key          Pointer to a valid DEMO1_ACCESS_KEY structure
+
+  @retval VOID
+**/
+VOID InsertLast (
+  DEMO1_ACCESS_KEY                    *access_key
+  )
+{
+  LINK *link = malloc(sizeof(LINK)); // create a link
+  assert (link != NULL);
+  memcpy(&link->access_key, access_key, KEYSIZE);
+
+  if (IsKeychainEmpty()) { // make it the last link
+    last = link;
+  } else {
+    last->next = link; // make link a new last link
+    link->prev = last; // mark old last LINK as prev of new link
+   }
+  link->next = NULL;
+  last = link; // point last to new last LINK
+}
+
+/**
+  Test if the provided key exists in the key chain
+
+  @param[in]  access_key          Pointer to a valid DEMO1_ACCESS_KEY structure
+
+  @retval TRUE                    The key is valid and exists in the chain
+  @retval FALSE                   The key is invalid or does not exist in the chain
+**/
+BOOLEAN DoesKeyExist (
+  DEMO1_ACCESS_KEY                    *access_key
+  )
+{
+  LINK *current;
+  if (access_key == NULL) {
+    return FALSE;
+  }
+
+  // loop over keychain
+  for(current = head; current != NULL; current = current->next) {
+    if (access_key->access_key_store[0] == current->access_key.access_key_store[0]) {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+/**
+  Event handle called when the INIT phase is complete and the Access Key Protocol 
+  must cease generating new keys.
+
+  @param[in]  Event               Event structure
+  @param[in]  Context             Pointer to a context. (unused)
+
+  @retval                         VOID
+**/
+STATIC
+VOID
+EFIAPI
+ReadyToLock(
+  IN EFI_EVENT                        Event,
+  IN VOID                             *Context
+  )
+{
+  accessKeyLock = TRUE;
+  //gBS->CloseEvent (Event);
+}
+
+/**
+  Main entry for this driver.
+
+  @param[in] ImageHandle          Image handle this driver.
+  @param[in] SystemTable          Pointer to SystemTable.
+
+  @retval EFI_SUCCESS             Completed successfully.
+  @retval Status                  Returns from other functions may fail, causing this function to fail
+**/
+EFI_STATUS
+EFIAPI
+Demo1AccessKeyInit (
+  IN EFI_HANDLE                       ImageHandle,
+  IN EFI_SYSTEM_TABLE                 *SystemTable
+  )
+{
+  EFI_STATUS        Status;
+
+  //
+  // Get Random Number Generator protocol
+  //
+ // Status = gBS->LocateProtocol (&gEfiRngProtocolGuid, NULL, (VOID **)&RngProtocol);
+  if (EFI_ERROR (Status) || (RngProtocol == NULL)) {
+    //DEBUG ((DEBUG_ERROR, "%a: Could not locate RNG prototocol, Status = %r\n", 
+    //  __FUNCTION__, Status));
+    return Status;
+  }
+
+  //
+  // Create Master Key
+  //
+  masterKey = malloc(sizeof(DEMO1_ACCESS_KEY));
+  Status = Demo1GenerateAccessKey(&gDemo1_Access_Key_Protocol, NULL, TRUE, masterKey);
+  if (EFI_ERROR (Status)) {
+   // DEBUG ((DEBUG_ERROR, "%a: Could not generate master key, Status = %r\n",
+    //  __FUNCTION__, Status));
+    return Status;
+  }
+
+  //
+  // Create an event using event group gDemo1AccessKeyReadyToLockGuid.
+  //
+   ///////commented out for gcc run///////// 
+  // Status = gBS->CreateEventEx(
+  //   EVT_NOTIFY_SIGNAL,                                      // Type
+  //   TPL_NOTIFY,                                             // NotifyTpl
+  //   ReadyToLock,                                            // NotifyFunction
+  //   NULL,                                                  // NotifyContext
+  //   &gDemo1AccessKeyReadyToLockGuid,                        // EventGroup
+  //   &(gDemo1_Access_Key_Protocol.Demo1_Ready_To_Lock_Event) // Event
+  // );
+
+  //
+  // Install Access Key Protocol
+  //
+  ///////commented out for gcc run///////// 
+  // Status = gBS->InstallProtocolInterface (
+  //   &ImageHandle,
+  //   &gDemo1AccessKeyProtocolGuid,
+  //   EFI_NATIVE_INTERFACE,
+  //   &gDemo1_Access_Key_Protocol
+  //   );
+  if (EFI_ERROR (Status)) {
+   // DEBUG ((DEBUG_ERROR, "%a: Could not install Access Key Protocol, Status = %r\n",
+    //  __FUNCTION__, Status));
+    return Status;
+  }
+
+  return EFI_SUCCESS;
+}
+
+/**
+  Unloads the application and its installed protocol.
+
+  @param[in]  ImageHandle         Handle that identifies the image to be unloaded.
+
+  @retval EFI_SUCCESS             The image has been unloaded.
+  @retval Status                  Return from UninstallProtocolInterface
+**/
+EFI_STATUS
+EFIAPI
+Demo1AccessKeyUnload (
+  IN EFI_HANDLE                       ImageHandle
+  )
+{
+  EFI_STATUS Status = EFI_SUCCESS;
+  // Status = gBS->UninstallProtocolInterface (
+  //   &ImageHandle,
+  //   &gDemo1AccessKeyProtocolGuid,
+  //   EFI_NATIVE_INTERFACE
+  // );
+  free(masterKey);
+  return Status;
+}
+
+
+/**
+  Generate Access Key Function.
+  Format of Access Key bits 0-64 Random Unique Value, 65-127 Key Magic and Write or Read value
+
+  @param[in] This                 Protocol
+  @param[in] Controller           Handle for controller
+  @param[in] WriteAccess          Boolean to declare key will be used to edit variable
+                                  TRUE indicates that the key needs write access
+                                  FALSE indicates that read only access is requested
+  @param[in,out] AccessKeyPtr     Pointer to storage for access key, caller provided
+
+  @retval EFI_SUCESS              The Access Key has been generated successfully.
+  @retval EFI_INVALID_PARAMETER   No storage for key provided
+  @retval EFI_WRITE_PROTECTED     The INIT stage is passed and no additional keys can be generated
+**/
+EFI_STATUS
+EFIAPI
+Demo1GenerateAccessKey(
+  IN Demo1_Access_Key_PROTOCOL        *This,
+  IN EFI_HANDLE                       Controller,
+  IN BOOLEAN                          WriteAccess,
+  IN OUT DEMO1_ACCESS_KEY             *AccessKeyPtr // caller provided storage
+  )
+{
+  EFI_STATUS Status = EFI_SUCCESS;
+  UINTN header=0;
+
+  // Verify user has provided storage
+  if (AccessKeyPtr == NULL) {
+    return EFI_INVALID_PARAMETER;
+  }
+  // Verify ReadyToLock event has not occurred
+  if (accessKeyLock == TRUE) {
+    return EFI_WRITE_PROTECTED;
+  }
+
+  // Generate random number
+  // Status = RngProtocol->GetRNG (RngProtocol, NULL, KEYSIZE, (UINT8 *)&AccessKeyPtr->access_key_store);
+  // if (EFI_ERROR (Status)) {
+  //   return Status;
+  // }
+  
+   AccessKeyPtr->access_key_store[0]=rand();
+  // Define magic for key
+  if (WriteAccess) {
+    header = (ACCESS_KEY_MAGIC << MAGIC_SIZE) + WRITE_ACCESS;
+  } else {
+    header = (ACCESS_KEY_MAGIC << MAGIC_SIZE) + READ_ACCESS;
+  }
+  AccessKeyPtr->access_key_store[1] = header;
+
+  // Store key in keychain
+  if (AccessKeyPtr != masterKey) {
+    InsertLast(AccessKeyPtr);
+  } else {
+    InsertFirst(AccessKeyPtr);
+  }
+
+  return Status;
+}
+
+/**
+  Validate Access Key Function.
+
+  @param[in] This                 Protocol
+  @param[in] Controller           Handle for controller
+  @param[in] AccessKeyPtr         Pointer to access key
+  @param[in] WriteAccess          Type of access requested.
+                                  TRUE indicates that the key needs write access
+                                  FALSE indicates that read only access is requested
+  @param[in,out] Result           Result of validation, return to caller. TRUE If valid, FALSE otherwise
+
+  @retval EFI_SUCCESS             Checked key, result of validation in Result boolean
+  @retval EFI_INVALID_PARAMETER   An argument from the caller was NULL
+**/
+EFI_STATUS
+EFIAPI
+Demo1ValidateAccessKey (
+  IN Demo1_Access_Key_PROTOCOL        *This,
+  IN EFI_HANDLE                       Controller,
+  IN DEMO1_ACCESS_KEY                 *AccessKeyPtr,
+  IN BOOLEAN                          WriteAccess,
+  IN OUT BOOLEAN                      *Result
+  )
+{
+  if ( Result == NULL ) {
+    return EFI_INVALID_PARAMETER;
+  }
+  *Result = FALSE;
+
+  if (AccessKeyPtr == NULL) {
+    return EFI_INVALID_PARAMETER;
+  }
+  // It is not checking whether the key is present in the Key chain or not. Just checking with the given parameter
+  // Check key permissions.
+  
+  if ( WriteAccess && (AccessKeyPtr->access_key_store[1] == ((ACCESS_KEY_MAGIC << MAGIC_SIZE) | READ_ACCESS ) ) ) {
+    return EFI_INVALID_PARAMETER;
+  }
+  *Result = DoesKeyExist(AccessKeyPtr);
+  return EFI_SUCCESS;
+}
+
+int main(){
+    UINTN Size = sizeof(DEMO1_ACCESS_KEY); 
+    masterKey = malloc(sizeof(DEMO1_ACCESS_KEY));
+    Demo1GenerateAccessKey(NULL, NULL, TRUE, masterKey);
+    DEMO1_ACCESS_KEY *my_access_key= malloc(Size);
+    accessKeyLock = TRUE;
+    // my_access_key=137271579781433534636404283792554901726;
+    klee_make_symbolic(my_access_key, Size, "my_access_key");
+    EFI_STATUS retval = Demo1GenerateAccessKey(NULL, NULL, TRUE, my_access_key);
+    // printf("Checked %d\n", retval);
+    BOOLEAN result=0, writeAccess;
+    printf("The access key header %u\n",my_access_key->access_key_store[1]);
+    printf("The access key body %u\n",my_access_key->access_key_store[0]);
+    //Validate the generated keys
+    //klee_make_symbolic(&writeAccess, sizeof(writeAccess), "writeAccess");
+    //klee_make_symbolic(&result, sizeof(result), "result");
+    // retval = Demo1ValidateAccessKey(NULL, NULL, my_access_key, TRUE, &result);
+    // printf("key1 Is my access key returning success ? (0 means success, else 2) %d\n", retval);
+    // printf("What's the result (1 means exists in keychain) %d\n", result);
+    LINK *current;
+    int flagPresenceInKeyChain =0;
+    // BOOLEAN resultDoesKeyExist=0;
+    // resultDoesKeyExist = DoesKeyExist(my_access_key);
+    EFI_STATUS retvalCheck = Demo1ValidateAccessKey(NULL, NULL, my_access_key, TRUE, &result);
+      for(current = head; current != NULL; current = current->next) {
+        if (my_access_key == current) {
+          flagPresenceInKeyChain=1;
+            // klee_assert((result==1 && retval==0 && my_access_key->access_key_store[1] == current->access_key.access_key_store[1])||(result==0 && my_access_key->access_key_store[1] == current->access_key.access_key_store[1])||((result==0 && my_access_key->access_key_store[1] != current->access_key.access_key_store[1]) ));
+            // printf("matched : result %d \n", result);
+            // printf("matched : retVal %d \n", retval);
+            break;
+        }
+      }
+      klee_assert((result==1 && flagPresenceInKeyChain==1 && retval==0 ) || (result==0 && flagPresenceInKeyChain==1)||(result==0 && flagPresenceInKeyChain!=1));
+  
+  //  //klee_assert(result==1 && retval==0 && flag==1 && my_access_key->access_key_store[1] != current->access_key.access_key_store[1]);
+  //  if(result==1 && retval==0 && flag==1 && my_access_key->access_key_store[0] == current->access_key.access_key_store[0]){
+  //  printf("access key value %d\n", my_access_key->access_key_store[0]);
+  //  printf("matched access key value %d\n", current->access_key.access_key_store[0]);
+  // }
+
+  // klee_assert(resultDoesKeyExist==1 && my_access_key->access_key_store[1] == current->access_key.access_key_store[1]);
+
+  return 0;
+}
