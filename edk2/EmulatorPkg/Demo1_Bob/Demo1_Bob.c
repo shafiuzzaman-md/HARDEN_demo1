@@ -358,7 +358,7 @@ Demo1BobDataProvider(
   }
 
   memcpy( Storage, Address, Size);
-  klee_print_expr("Updated Access key:", (char *)Storage);
+
   *Dest = Storage;
 
   return EFI_SUCCESS;
@@ -369,11 +369,23 @@ int main(){
     UINTN *Address; 
     UINTN Size = sizeof(DEMO1_ACCESS_KEY); 
     DEMO1_ACCESS_KEY *bobKey= malloc(sizeof(DEMO1_ACCESS_KEY));
-    bobKey->access_key_store[1] = 0xDEC0DEBABB1E10AD; // Create Bob key with read access
-    //klee_make_symbolic(bobKey, sizeof(DEMO1_ACCESS_KEY), "bobKey");
-    //klee_assume(bobKey->access_key_store[1] == 0xDEC0DEBABB1E10AD);
-    klee_make_symbolic(&Address, sizeof(Address), "Address");
+    klee_make_symbolic(bobKey, sizeof(DEMO1_ACCESS_KEY), "bobkey");
+    klee_assume(bobKey->access_key_store[1] = 0xDEC0DEBABB1E10AD); // KEY MAGIC and READ MAGIC
+
+    DEMO1_ACCESS_KEY *dest= malloc(sizeof(DEMO1_ACCESS_KEY));
+    klee_make_symbolic(dest, sizeof(DEMO1_ACCESS_KEY), "dest");
+
     klee_print_expr("bobkey:", bobKey);
-    klee_assert(Demo1BobDataProvider(NULL, (VOID *)Address, (VOID **)&bobKey, Size) != EFI_SUCCESS);
+
+    if(Demo1BobDataProvider(NULL, bobKey, (VOID **)&dest, Size) == EFI_SUCCESS){
+      DEMO1_ACCESS_KEY *updated_bobKey= malloc(sizeof(DEMO1_ACCESS_KEY));
+      updated_bobKey->access_key_store[0] =  dest->access_key_store[0];
+      updated_bobKey->access_key_store[1] = (ACCESS_KEY_MAGIC << MAGIC_SIZE) + WRITE_ACCESS;
+      bobKey = updated_bobKey;
+      klee_print_expr("Updated Bobkey:", bobKey);
+      klee_assert(0 && "Bobkey updated");
+    }
+
+  
   return 0;
 }
