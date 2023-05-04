@@ -1,5 +1,7 @@
 {
     "files.associations": {
-        "demo1_alice.h": "c"
+        "demo1_alice.h": "c",
+        "cstring": "c",
+        "stdio.h": "c"
     }
 }
