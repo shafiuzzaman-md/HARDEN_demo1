@@ -370,10 +370,12 @@ int main(){
     UINTN Size = sizeof(DEMO1_ACCESS_KEY); 
     DEMO1_ACCESS_KEY *bobKey= malloc(sizeof(DEMO1_ACCESS_KEY));
     bobKey->access_key_store[1] = 0xDEC0DEBABB1E10AD; // Create Bob key with read access
+    printf("The access lock is %d\n", accessKeyLock);
+    printf("The access lock address is %p\n", &accessKeyLock);
     //klee_make_symbolic(bobKey, sizeof(DEMO1_ACCESS_KEY), "bobKey");
     //klee_assume(bobKey->access_key_store[1] == 0xDEC0DEBABB1E10AD);
-    klee_make_symbolic(&Address, sizeof(Address), "Address");
-    klee_print_expr("bobkey:", bobKey);
-    klee_assert(Demo1BobDataProvider(NULL, (VOID *)Address, (VOID **)&bobKey, Size) != EFI_SUCCESS);
+    //klee_make_symbolic(&Address, sizeof(Address), "Address");
+    //klee_print_expr("bobkey:", bobKey);
+    //klee_assert(Demo1BobDataProvider(NULL, (VOID *)Address, (VOID **)&bobKey, Size) != EFI_SUCCESS);
   return 0;
 }

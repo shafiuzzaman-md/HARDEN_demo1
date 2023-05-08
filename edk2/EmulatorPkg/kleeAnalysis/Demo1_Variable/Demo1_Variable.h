@@ -14,7 +14,11 @@ Revision History: 0.1
 #ifndef _Demo1_Variable_H_
 #define _Demo1_Variable_H_
 
-
+#include<assert.h>
+#include<string.h>
+#include<stdlib.h>
+#include<stdbool.h>
+#include<stdio.h>
 #include "Uefi.h"
 #include "Library/DebugLib.h"
 #include "Library/BaseLib.h"
@@ -57,7 +61,7 @@ Revision History: 0.1
 #include "Guid/VarErrorFlag.h"
 
 #include "Variable.h"
-#include "../Demo1_Access_Key/Demo1_Access_Key.h"
+#include "../Demo1_Access_Key/Demo1_Access_Key.c"
 
 
 #define LOCKED    1

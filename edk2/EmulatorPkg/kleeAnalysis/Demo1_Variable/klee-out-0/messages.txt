@@ -1,0 +1,4 @@
+KLEE: Using STP solver backend
+KLEE: SAT solver: MiniSat
+KLEE: Logging queries that reach solver in .smt2 format to /home/laboni/Laboni/DARPA_HARDEN/HARDEN_demo1/edk2/EmulatorPkg/kleeAnalysis/Demo1_Variable/klee-out-0/solver-queries.smt2
+

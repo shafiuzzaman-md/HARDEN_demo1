@@ -14,6 +14,7 @@ Revision History: 0.1
 #ifndef _Demo1_Bob_H_
 #define _Demo1_Bob_H_
 
+#include<stdio.h>
 #include "Uefi.h"
 #include "Library/DebugLib.h"
 #include "Library/BaseLib.h"

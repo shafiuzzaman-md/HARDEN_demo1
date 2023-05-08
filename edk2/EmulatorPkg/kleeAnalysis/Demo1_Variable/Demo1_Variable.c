@@ -299,13 +299,11 @@ mineInitEmuNonVolatileVariableStore (
 {
   VARIABLE_STORE_HEADER  *VariableStore;
   UINT32                 VariableStoreLength=0x8000;
-  ASSERT (sizeof (VARIABLE_STORE_HEADER) <= VariableStoreLength);
+  assert (sizeof (VARIABLE_STORE_HEADER) <= VariableStoreLength);
 
   //
   // Allocate memory for variable store.
   //
-
-klee_make_symbolic(&VariableStore, sizeof(VariableStore), "VariableStore");
 
 VariableStore = (VARIABLE_STORE_HEADER *)malloc(VariableStoreLength);
   //  VariableStore = (VARIABLE_STORE_HEADER *)AllocateRuntimePool (VariableStoreLength); // 32KB
@@ -313,12 +311,13 @@ VariableStore = (VARIABLE_STORE_HEADER *)malloc(VariableStoreLength);
       return EFI_OUT_OF_RESOURCES;
     }
 
-  SetMem (VariableStore, VariableStoreLength, 0xff);
+  memset (VariableStore, VariableStoreLength, 0xff);
 
   //
   // Use gAuthVarGUID for potential auth variable support.
   //
-  CopyGuid (&VariableStore->Signature, &gAuthVarGUID);
+  // CopyGuid (&VariableStore->Signature, &gAuthVarGUID);
+  //VariableStore->Signature = gAuthVarGUID;
   VariableStore->Size      = VariableStoreLength;
   VariableStore->Format    = VARIABLE_STORE_FORMATTED;
   VariableStore->State     = VARIABLE_STORE_HEALTHY;
@@ -350,7 +349,9 @@ mineInitNonVolatileVariableStore (
   EFI_STATUS            Status;
 
   Status = mineInitEmuNonVolatileVariableStore (&VariableStoreBase);
+  printf("The variable store base is %d\n", VariableStoreBase);
   if (EFI_ERROR (Status)) {
+    printf("Not in error state \n");
     return Status;
   }
   mineVariableModuleGlobal->VariableGlobal.EmuNvMode = TRUE;
@@ -472,11 +473,11 @@ UpdateAccessVariableInfo (
       // the EFI System Table.
       //
       *VariableInfo = AllocateZeroPool (sizeof (VARIABLE_INFO_ENTRY));
-      ASSERT (*VariableInfo != NULL);
+      assert (*VariableInfo != NULL);
 
       CopyGuid (&(*VariableInfo)->VendorGuid, VendorGuid);
       (*VariableInfo)->Name = AllocateZeroPool (StrSize (VariableName));
-      ASSERT ((*VariableInfo)->Name != NULL);
+      assert ((*VariableInfo)->Name != NULL);
       StrCpyS ((*VariableInfo)->Name, StrSize (VariableName)/sizeof (CHAR16), VariableName);
       (*VariableInfo)->Volatile = Volatile;
     }
@@ -510,11 +511,11 @@ UpdateAccessVariableInfo (
         // Next iteration of the loop will fill in the data.
         //
         Entry->Next = AllocateZeroPool (sizeof (VARIABLE_INFO_ENTRY));
-        ASSERT (Entry->Next != NULL);
+        assert (Entry->Next != NULL);
 
         CopyGuid (&Entry->Next->VendorGuid, VendorGuid);
         Entry->Next->Name = AllocateZeroPool (StrSize (VariableName));
-        ASSERT (Entry->Next->Name != NULL);
+        assert (Entry->Next->Name != NULL);
         StrCpyS (Entry->Next->Name, StrSize (VariableName)/sizeof (CHAR16), VariableName);
         Entry->Next->Volatile = Volatile;
       }
@@ -652,7 +653,7 @@ UpdateAccessVariableStore (
   //
   // If Emulated Non-volatile Variable just do a simple mem copy.
   //
-  CopyMem ((UINT8 *)(UINTN)DataPtr, Buffer, DataSize);
+  memcpy ((UINT8 *)(UINTN)DataPtr, Buffer, DataSize);
   return EFI_SUCCESS;
 }
 
@@ -746,7 +747,7 @@ UpdateAccessVariable (
   if ((AccessKey->access_key_store[1] & WRITE_ACCESS) != WRITE_ACCESS){
     return EFI_WRITE_PROTECTED;
   }
-  
+
   AuthFormat = mineVariableModuleGlobal->VariableGlobal.AuthFormat;
   if ((CacheVariable->CurrPtr == NULL))
   {
@@ -781,7 +782,7 @@ UpdateAccessVariable (
   //
   NextVariable = GetAccessEndPointer ((VARIABLE_STORE_HEADER *)((UINTN)mineVariableModuleGlobal->VariableGlobal.NonVolatileVariableBase));
   ScratchSize  = mineVariableModuleGlobal->ScratchBufferSize;
-  SetMem (NextVariable, ScratchSize, 0xff);
+  memset (NextVariable, ScratchSize, 0xff);
   DataReady = FALSE;
 
   if (Variable->CurrPtr != NULL)
@@ -818,7 +819,7 @@ UpdateAccessVariable (
         //
         DataOffset     = GetAccessVariableDataOffset (CacheVariable->CurrPtr, AuthFormat);
         BufferForMerge = (UINT8 *)((UINTN)NextVariable + DataOffset);
-        CopyMem (
+        memcpy (
           BufferForMerge,
           (UINT8 *)((UINTN)CacheVariable->CurrPtr + DataOffset),
           DataSizeOfAccessVariable (CacheVariable->CurrPtr, AuthFormat)
@@ -850,7 +851,7 @@ UpdateAccessVariable (
           Status = EFI_INVALID_PARAMETER;
           goto Done;
         }
-        CopyMem ((UINT8 *)((UINTN)BufferForMerge + DataSizeOfAccessVariable (CacheVariable->CurrPtr, AuthFormat)), Data, DataSize);
+        memcpy ((UINT8 *)((UINTN)BufferForMerge + DataSizeOfAccessVariable (CacheVariable->CurrPtr, AuthFormat)), Data, DataSize);
         MergedBufSize = DataSizeOfAccessVariable (CacheVariable->CurrPtr, AuthFormat) + DataSize;
 
         //
@@ -894,7 +895,7 @@ UpdateAccessVariable (
       Status = EFI_NOT_FOUND;
       goto Done;
     }
-    CopyMem(&(NextVariable->accesskeylist), AccessKey, KEYSIZE); // Store the access key with the new variable
+    memcpy(&(NextVariable->accesskeylist), AccessKey, KEYSIZE); // Store the access key with the new variable
   }
   //
   // Function part - create a new variable and copy the data.
@@ -914,7 +915,7 @@ UpdateAccessVariable (
         (TimeStamp != NULL))
     {
       if ((Attributes & EFI_VARIABLE_APPEND_WRITE) == 0) {
-        CopyMem (&AuthVariable->TimeStamp, TimeStamp, sizeof (EFI_TIME));
+        memcpy (&AuthVariable->TimeStamp, TimeStamp, sizeof (EFI_TIME));
       } else {
         //
         // In the case when the EFI_VARIABLE_APPEND_WRITE attribute is set, only
@@ -923,9 +924,9 @@ UpdateAccessVariable (
         //
         if (Variable->CurrPtr != NULL) {
           if (AccessVariableCompareTimeStampInternal (&(((AUTHENTICATED_VARIABLE_HEADER *)CacheVariable->CurrPtr)->TimeStamp), TimeStamp)) {
-            CopyMem (&AuthVariable->TimeStamp, TimeStamp, sizeof (EFI_TIME));
+            memcpy (&AuthVariable->TimeStamp, TimeStamp, sizeof (EFI_TIME));
           } else {
-            CopyMem (&AuthVariable->TimeStamp, &(((AUTHENTICATED_VARIABLE_HEADER *)CacheVariable->CurrPtr)->TimeStamp), sizeof (EFI_TIME));
+            memcpy (&AuthVariable->TimeStamp, &(((AUTHENTICATED_VARIABLE_HEADER *)CacheVariable->CurrPtr)->TimeStamp), sizeof (EFI_TIME));
           }
         }
       }
@@ -940,7 +941,7 @@ UpdateAccessVariable (
 
   VarNameOffset = GetAccessVariableHeaderSize (AuthFormat);
   VarNameSize   = strlen (VariableName);
-  CopyMem ((UINT8 *)((UINTN)NextVariable + VarNameOffset), VariableName, VarNameSize );
+  memcpy ((UINT8 *)((UINTN)NextVariable + VarNameOffset), VariableName, VarNameSize );
   VarDataOffset = VarNameOffset + VarNameSize + GET_PAD_SIZE (VarNameSize);
 
   //
@@ -949,10 +950,10 @@ UpdateAccessVariable (
   //
   if (!DataReady)
   {
-    CopyMem ((UINT8 *)((UINTN)NextVariable + VarDataOffset), Data, DataSize);
+    memcpy ((UINT8 *)((UINTN)NextVariable + VarDataOffset), Data, DataSize);
   }
 
-  CopyMem (GetAccessVendorGuidPtr (NextVariable, AuthFormat), VendorGuid, sizeof (EFI_GUID));
+  memcpy (GetAccessVendorGuidPtr (NextVariable, AuthFormat), VendorGuid, sizeof (EFI_GUID));
   //
   // There will be pad bytes after Data, the NextVariable->NameSize and
   // NextVariable->DataSize should not include pad size so that variable
@@ -1058,7 +1059,7 @@ FindAccessVariableEx (
           if (CompareGuid (VendorGuid, GetAccessVendorGuidPtr (PtrTrack->CurrPtr, AuthFormat))) {
             Point = (VOID *)GetAccessVariableNamePtr (PtrTrack->CurrPtr, AuthFormat);
 
-            ASSERT (NameSizeOfAccessVariable (PtrTrack->CurrPtr, AuthFormat) != 0);
+            assert (NameSizeOfAccessVariable (PtrTrack->CurrPtr, AuthFormat) != 0);
             if (CompareMem (VariableName, Point, NameSizeOfAccessVariable (PtrTrack->CurrPtr, AuthFormat)) == 0) {
               if (PtrTrack->CurrPtr->State == (VAR_IN_DELETED_TRANSITION & VAR_ADDED)) {
                 InDeletedVariable = PtrTrack->CurrPtr;
@@ -1172,9 +1173,6 @@ mineVariableServiceSetVariable (
   UINTN                           PayloadSize;
   BOOLEAN                         AuthFormat;
   BOOLEAN                         ValidKey;
-
-  mineVariableModuleGlobal = (struct VARIABLE_MODULE_GLOBAL*)malloc(sizeof( VARIABLE_MODULE_GLOBAL))  ;
-  klee_make_symbolic(mineVariableModuleGlobal, sizeof(VARIABLE_MODULE_GLOBAL), "mineVariableModuleGlobal");
  
   AuthFormat = mineVariableModuleGlobal->VariableGlobal.AuthFormat;
 
@@ -1281,7 +1279,7 @@ mineVariableServiceGetVariable (
   // Get data size
   //
   VarDataSize = DataSizeOfAccessVariable (Variable.CurrPtr, mineVariableModuleGlobal->VariableGlobal.AuthFormat);
-  ASSERT (VarDataSize != 0);
+  assert (VarDataSize != 0);
 
   if (*DataSize >= VarDataSize) {
     if (Data == NULL) {
@@ -1289,7 +1287,7 @@ mineVariableServiceGetVariable (
       goto Done;
     }
 
-    CopyMem (Data, GetAccessVariableDataPtr (Variable.CurrPtr, mineVariableModuleGlobal->VariableGlobal.AuthFormat), VarDataSize);
+    memcpy (Data, GetAccessVariableDataPtr (Variable.CurrPtr, mineVariableModuleGlobal->VariableGlobal.AuthFormat), VarDataSize);
 
     *DataSize = VarDataSize;
     UpdateAccessVariableInfo (VariableName, VendorGuid, Variable.Volatile, TRUE, FALSE, FALSE, FALSE, &gVarInfo);
@@ -1354,7 +1352,7 @@ Demo1VariableInit (
   //
   Status = mineInitNonVolatileVariableStore ();
   if (EFI_ERROR (Status)) {
-    FreePool (mineVariableModuleGlobal);
+    free (mineVariableModuleGlobal);
     return Status;
   } 
 
@@ -1378,7 +1376,7 @@ Demo1_Variable_Unload (
 {
   //gST->RuntimeServices->GetAccessVariable = NULL;
   //gST->RuntimeServices->SetAccessVariable = NULL;
-  FreePool(mineVariableModuleGlobal);
+  free(mineVariableModuleGlobal);
   return EFI_SUCCESS;
 }
 
@@ -1435,14 +1433,19 @@ int main(){
   klee_make_symbolic(AccessKey, sizeof(DEMO1_ACCESS_KEY), "AccessKey");
   klee_assume(AccessKey->access_key_store[1] == 0xDEC0DEBABB1E10AD);
 
-  klee_make_symbolic(&VariableName, sizeof(VariableName), "VariableName");
+  // klee_make_symbolic(&VariableName, sizeof(VariableName), "VariableName");
   klee_make_symbolic(&VendorGuid, sizeof(VendorGuid), "VendorGuid");
  
-  klee_make_symbolic(&Data, sizeof(VariableName), "VariableName");
-  klee_make_symbolic(&DataSize, sizeof(DataSize), "DataSize");
-  klee_make_symbolic(&Attributes, sizeof(Attributes), "Attributes");
-  EFI_STATUS status;
-  status = mineVariableServiceSetVariable(VariableName, VendorGuid, Attributes, AccessKey,  DataSize,  Data);
-  klee_assert(status == EFI_INVALID_PARAMETER);
+  // klee_make_symbolic(&Data, sizeof(VariableName), "VariableName");
+  // klee_make_symbolic(&DataSize, sizeof(DataSize), "DataSize");
+  // klee_make_symbolic(&Attributes, sizeof(Attributes), "Attributes");
+  // EFI_STATUS status;
+  // status = mineVariableServiceSetVariable(VariableName, VendorGuid, Attributes, AccessKey,  DataSize,  Data);
+  // klee_assert(status == EFI_INVALID_PARAMETER);
+  mineVariableModuleGlobal = malloc (sizeof (VARIABLE_MODULE_GLOBAL));
+  mineInitNonVolatileVariableStore();
+  VariableName = L"Alice_Mode";
+  UINTN ExampleVar_Value = 0;
+  mineVariableServiceSetVariable(VariableName, VendorGuid, EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_RUNTIME_ACCESS | EFI_VARIABLE_NON_VOLATILE, AccessKey,  sizeof(ExampleVar_Value),  &ExampleVar_Value);
   return 0;
 }

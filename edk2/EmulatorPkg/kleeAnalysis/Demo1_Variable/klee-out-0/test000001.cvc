@@ -1,0 +1,37 @@
+AccessKey0  : ARRAY BITVECTOR(32) OF BITVECTOR(8);
+VendorGuid1  : ARRAY BITVECTOR(32) OF BITVECTOR(8);
+%----------------------------------------------------
+ASSERT( ((((((((AccessKey0[0x00000008] = 0xAD
+) AND (AccessKey0[0x00000009] = 0x10
+)
+) AND (AccessKey0[0x0000000A] = 0x1E
+)
+) AND (AccessKey0[0x0000000B] = 0xBB
+)
+) AND (AccessKey0[0x0000000C] = 0xBA
+)
+) AND (AccessKey0[0x0000000D] = 0xDE
+)
+) AND (AccessKey0[0x0000000E] = 0xC0
+)
+) AND (AccessKey0[0x0000000F] = 0xDE
+)
+) );
+ASSERT( ((((((((VendorGuid1[0x00000000] = 0x00
+) AND (VendorGuid1[0x00000001] = 0x00
+)
+) AND (VendorGuid1[0x00000002] = 0x00
+)
+) AND (VendorGuid1[0x00000003] = 0x00
+)
+) AND (VendorGuid1[0x00000004] = 0x00
+)
+) AND (VendorGuid1[0x00000005] = 0x00
+)
+) AND (VendorGuid1[0x00000006] = 0x00
+)
+) AND (VendorGuid1[0x00000007] = 0x00
+)
+) );
+%----------------------------------------------------
+QUERY( FALSE  );

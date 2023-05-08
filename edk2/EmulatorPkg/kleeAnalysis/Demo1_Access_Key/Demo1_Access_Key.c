@@ -143,16 +143,17 @@ BOOLEAN DoesKeyExist (
 
   // loop over keychain
   for(current = head; current != NULL; current = current->next) {
-    // //Current version : Only checking the first 64 bit
-    // if (access_key->access_key_store[0] == current->access_key.access_key_store[0]) {
-    //   return TRUE;
-    // }
-    // Version 1 : Corrected check for existing access key in the key chain
-    if (access_key == current) {
+    //Current version : Only checking the first 64 bit
+    if (access_key->access_key_store[0] == current->access_key.access_key_store[0]) {
       return TRUE;
     }
-    // // Version 2 : Corrected check for existing access key in the key chain
-    // if ((access_key->access_key_store[0] == current->access_key.access_key_store[0]) && ((access_key->access_key_store[1] == current->access_key.access_key_store[1]))) {
+    // // Version 1 : Corrected check for existing access key in the key chain
+    // if (access_key == current) {
+    //   return TRUE;
+    // }
+    // Version 2 : Corrected check for existing access key in the key chain
+    // if ((access_key->access_key_store[0] == current->access_key.access_key_store[0]) && 
+    // ((access_key->access_key_store[1] == current->access_key.access_key_store[1]))) {
     //   return TRUE;
     // }
   }
@@ -379,31 +380,31 @@ Demo1ValidateAccessKey (
   return EFI_SUCCESS;
 }
 
-int main(){
-    UINTN Size = sizeof(DEMO1_ACCESS_KEY); 
-    masterKey = malloc(sizeof(DEMO1_ACCESS_KEY));
-    Demo1GenerateAccessKey(NULL, NULL, TRUE, masterKey);
-    DEMO1_ACCESS_KEY *my_access_key= malloc(Size);
-    accessKeyLock = TRUE;
-    //Declaration of my_access_key as symbolic
-    klee_make_symbolic(my_access_key, Size, "my_access_key");
-    //Generate the symbolic variable with Demo1GenerateAccesskey to put it in the keychain
-    EFI_STATUS retval = Demo1GenerateAccessKey(NULL, NULL, TRUE, my_access_key); 
-    BOOLEAN result=0, writeAccess;
-    LINK *current;
-    int flagPresenceInKeyChain =0; //This flag 0 means not present in the keychain
-    // Validating an accesskey using DemoValidateAccessKey
-    EFI_STATUS retvalCheck = Demo1ValidateAccessKey(NULL, NULL, my_access_key, TRUE, &result);
-      for(current = head; current != NULL; current = current->next) {
-        if ((my_access_key->access_key_store[0] == current->access_key.access_key_store[0]) && ((my_access_key->access_key_store[1] == current->access_key.access_key_store[1]))){
-          flagPresenceInKeyChain=1;
-          break;
-        }
-      }
-      //result 1 : Demo1ValidateAccessKey is saying the Access Key is present in the keychain
-      //flagPresenceInKeyChain : Checking in the keychain if the key is present in the keychain or not
-      //retValCheck : the return value of Demo1ValidateAccessKey function, 0 means success
-      //The klee assert is ensuring the retvalCheck is sucees and result 1 must ensure the presence of the key in the keychain; any other combo is don't care
-      klee_assert((result==1 && flagPresenceInKeyChain==1 && retvalCheck==0 ) || (result==0 && flagPresenceInKeyChain==1)||(result==0 && flagPresenceInKeyChain!=1));
-  return 0;
-}
+// int main(){
+//     UINTN Size = sizeof(DEMO1_ACCESS_KEY); 
+//     masterKey = malloc(sizeof(DEMO1_ACCESS_KEY));
+//     Demo1GenerateAccessKey(NULL, NULL, TRUE, masterKey);
+//     DEMO1_ACCESS_KEY *my_access_key= malloc(Size);
+//     accessKeyLock = TRUE;
+//     //Declaration of my_access_key as symbolic
+//     klee_make_symbolic(my_access_key, Size, "my_access_key");
+//     //Generate the symbolic variable with Demo1GenerateAccesskey to put it in the keychain
+//     EFI_STATUS retval = Demo1GenerateAccessKey(NULL, NULL, TRUE, my_access_key); 
+//     BOOLEAN result=0, writeAccess;
+//     LINK *current;
+//     int flagPresenceInKeyChain =0; //This flag 0 means not present in the keychain
+//     // Validating an accesskey using DemoValidateAccessKey
+//     EFI_STATUS retvalCheck = Demo1ValidateAccessKey(NULL, NULL, my_access_key, TRUE, &result);
+//       for(current = head; current != NULL; current = current->next) {
+//         if ((my_access_key->access_key_store[0] == current->access_key.access_key_store[0]) && ((my_access_key->access_key_store[1] == current->access_key.access_key_store[1]))){
+//           flagPresenceInKeyChain=1;
+//           break;
+//         }
+//       }
+//       //result 1 : Demo1ValidateAccessKey is saying the Access Key is present in the keychain
+//       //flagPresenceInKeyChain : Checking in the keychain if the key is present in the keychain or not
+//       //retValCheck : the return value of Demo1ValidateAccessKey function, 0 means success
+//       //The klee assert is ensuring the retvalCheck is sucees and result 1 must ensure the presence of the key in the keychain; any other combo is don't care
+//       klee_assert((result==1 && flagPresenceInKeyChain==1 && retvalCheck==0 ) || (result==0 && flagPresenceInKeyChain==1)||(result==0 && flagPresenceInKeyChain!=1));
+//   return 0;
+// }

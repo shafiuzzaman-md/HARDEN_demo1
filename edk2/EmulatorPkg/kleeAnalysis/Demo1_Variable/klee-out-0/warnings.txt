@@ -1,0 +1,21 @@
+KLEE: WARNING: undefined reference to function: AllocateRuntimeZeroPool
+KLEE: WARNING: undefined reference to function: AllocateZeroPool
+KLEE: WARNING: undefined reference to function: CompareGuid
+KLEE: WARNING: undefined reference to function: CompareMem
+KLEE: WARNING: undefined reference to function: CopyGuid
+KLEE: WARNING: undefined reference to function: CopyMem
+KLEE: WARNING: undefined reference to function: FindAcDoesKeyExistcessVariable
+KLEE: WARNING: undefined reference to function: FreePool
+KLEE: WARNING: undefined reference to function: StrCmp
+KLEE: WARNING: undefined reference to function: StrCpyS
+KLEE: WARNING: undefined reference to function: StrSize
+KLEE: WARNING: undefined reference to function: ZeroMem
+KLEE: WARNING: undefined reference to function: printf
+KLEE: WARNING: undefined reference to function: rand
+KLEE: WARNING: undefined reference to function: strlen
+KLEE: WARNING: undefined reference to function: strncmp
+KLEE: WARNING ONCE: Alignment of memory from call "malloc" is not modelled. Using alignment of 8.
+KLEE: WARNING ONCE: calling external: syscall(4, 94283560551624, 94283555572400) at klee/runtime/POSIX/fd.c:544 12
+KLEE: WARNING ONCE: calling __klee_posix_wrapped_main with extra arguments.
+KLEE: WARNING ONCE: calling external: printf(94283560600224, 94283560427520) at Demo1_Variable.c:353 7
+KLEE: WARNING ONCE: calling external: strlen(94283560610720) at Demo1_Variable.c:1189 33
