@@ -15,6 +15,7 @@ Revision History: 0.1
 #include "Protocol/LoadedImage.h"
 #include "klee/klee.h"
 #include "../Demo1_Access_Key/Demo1_Access_Key.c"
+#include "../Demo1_Variable/Demo1_Variable.c"
 // PRODUCED
 Demo1_Bob_PROTOCOL
 gDemo1_Bob_Protocol = {
@@ -22,7 +23,7 @@ gDemo1_Bob_Protocol = {
 };
 
 // CONSUMED
-Demo1_Access_Key_PROTOCOL  *AccessKeyProtocol = NULL;
+//Demo1_Access_Key_PROTOCOL  *AccessKeyProtocol = NULL;
 Demo1_Alice_PROTOCOL *AliceProtocol;
 
 // GLOBALS
@@ -358,34 +359,23 @@ Demo1BobDataProvider(
   }
 
   memcpy( Storage, Address, Size);
-
+  klee_print_expr("Updated Access key:", (char *)Storage);
   *Dest = Storage;
 
   return EFI_SUCCESS;
 }
 
-
+// Arbitrary read through Demo1BobDataProvider leaks access key
 int main(){
-    UINTN *Address; 
-    UINTN Size = sizeof(DEMO1_ACCESS_KEY); 
+    EFI_GUID *VendorGuid= malloc(sizeof(EFI_GUID));
+    klee_make_symbolic(VendorGuid, sizeof(EFI_GUID), "VendorGuid");
+    klee_assume (VendorGuid != NULL);
     DEMO1_ACCESS_KEY *bobKey= malloc(sizeof(DEMO1_ACCESS_KEY));
-    klee_make_symbolic(bobKey, sizeof(DEMO1_ACCESS_KEY), "bobkey");
-    klee_assume(bobKey->access_key_store[1] = 0xDEC0DEBABB1E10AD); // KEY MAGIC and READ MAGIC
-
-    DEMO1_ACCESS_KEY *dest= malloc(sizeof(DEMO1_ACCESS_KEY));
-    klee_make_symbolic(dest, sizeof(DEMO1_ACCESS_KEY), "dest");
-
-    klee_print_expr("bobkey:", bobKey);
-
-    if(Demo1BobDataProvider(NULL, bobKey, (VOID **)&dest, Size) == EFI_SUCCESS){
-      DEMO1_ACCESS_KEY *updated_bobKey= malloc(sizeof(DEMO1_ACCESS_KEY));
-      updated_bobKey->access_key_store[0] =  dest->access_key_store[0];
-      updated_bobKey->access_key_store[1] = (ACCESS_KEY_MAGIC << MAGIC_SIZE) + WRITE_ACCESS;
-      bobKey = updated_bobKey;
-      klee_print_expr("Updated Bobkey:", bobKey);
-      klee_assert(0 && "Bobkey updated");
-    }
-
-  
+    klee_make_symbolic(bobKey, sizeof(DEMO1_ACCESS_KEY), "bobKey");
+    accessKeyLock = TRUE;
+    printf("Before modification: %d\n", accessKeyLock);
+    mineVariableServiceGetVariable (ALICEMODE_VARNAME, &VendorGuid, NULL, (VOID *)&bobKey, sizeof(accessKeyLock), &accessKeyLock);
+    printf("After modification: %d\n", accessKeyLock);
+    klee_assert(accessKeyLock == TRUE);
   return 0;
 }

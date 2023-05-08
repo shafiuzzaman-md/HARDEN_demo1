@@ -15,13 +15,13 @@ Revision History: 0.1
 
 // PRODUCED
 Demo1_Access_Key_PROTOCOL
-gDemo1_Access_Key_Protocol = {
-  Demo1GenerateAccessKey,
-  Demo1ValidateAccessKey,
+    gDemo1_Access_Key_Protocol = {
+        Demo1GenerateAccessKey,
+        Demo1ValidateAccessKey,
 };
 
 // CONSUMED
-EFI_RNG_PROTOCOL  *RngProtocol = NULL;
+EFI_RNG_PROTOCOL *RngProtocol = NULL;
 DEMO1_ACCESS_KEY *masterKey = NULL;
 
 // GLOBALS
@@ -30,7 +30,8 @@ BOOLEAN accessKeyLock = FALSE;
 // ACCESS KEY STORAGE
 typedef struct _LINK LINK;
 
-struct _LINK { // doubly linked list of keys
+struct _LINK
+{ // doubly linked list of keys
   DEMO1_ACCESS_KEY access_key;
   LINK *next;
   LINK *prev;
@@ -38,7 +39,7 @@ struct _LINK { // doubly linked list of keys
 
 LINK *head = NULL;
 LINK *last = NULL;
-LINK *keychain=NULL;
+LINK *keychain = NULL;
 
 ///
 /// Utility Functions for keychain
@@ -51,10 +52,9 @@ LINK *keychain=NULL;
   @retval FALSE                   The keychain list is non-empty
 **/
 BOOLEAN IsKeychainEmpty(
-  VOID
-  )
+    VOID)
 {
-   return head == NULL;
+  return head == NULL;
 }
 
 /**
@@ -62,13 +62,13 @@ BOOLEAN IsKeychainEmpty(
 
   @retval UINTN                   The number of entries in the list
 **/
-UINTN KeychainLength (
-  VOID
-  )
+UINTN KeychainLength(
+    VOID)
 {
   UINTN length = 0;
   LINK *current;
-  for(current = head; current != NULL; current = current->next){
+  for (current = head; current != NULL; current = current->next)
+  {
     length++;
   }
   return length;
@@ -81,22 +81,24 @@ UINTN KeychainLength (
 
   @retval VOID
 **/
-void InsertFirst (
-  DEMO1_ACCESS_KEY                    *access_key
-  )
+void InsertFirst(
+    DEMO1_ACCESS_KEY *access_key)
 {
   LINK *link = AllocatePool(sizeof(LINK)); // create a link
-  ASSERT (link != NULL);
+  ASSERT(link != NULL);
   CopyMem(&link->access_key, access_key, KEYSIZE);
 
-  if (IsKeychainEmpty()) { // make it the last link
+  if (IsKeychainEmpty())
+  { // make it the last link
     last = link;
-  } else {
+  }
+  else
+  {
     head->prev = link; // update first prev link
   }
   link->prev = NULL;
   link->next = head; // point it to old first link
-  head = link; // point first to new first link
+  head = link;       // point first to new first link
 }
 
 /**
@@ -106,20 +108,22 @@ void InsertFirst (
 
   @retval VOID
 **/
-VOID InsertLast (
-  DEMO1_ACCESS_KEY                    *access_key
-  )
+VOID InsertLast(
+    DEMO1_ACCESS_KEY *access_key)
 {
   LINK *link = AllocatePool(sizeof(LINK)); // create a link
-  ASSERT (link != NULL);
+  ASSERT(link != NULL);
   CopyMem(&link->access_key, access_key, KEYSIZE);
 
-  if (IsKeychainEmpty()) { // make it the last link
+  if (IsKeychainEmpty())
+  { // make it the last link
     last = link;
-  } else {
+  }
+  else
+  {
     last->next = link; // make link a new last link
     link->prev = last; // mark old last LINK as prev of new link
-   }
+  }
   link->next = NULL;
   last = link; // point last to new last LINK
 }
@@ -132,26 +136,31 @@ VOID InsertLast (
   @retval TRUE                    The key is valid and exists in the chain
   @retval FALSE                   The key is invalid or does not exist in the chain
 **/
-BOOLEAN DoesKeyExist (
-  DEMO1_ACCESS_KEY                    *access_key
-  )
+BOOLEAN DoesKeyExist(
+    DEMO1_ACCESS_KEY *access_key)
 {
+
   LINK *current;
-  if (access_key == NULL) {
+  if (access_key == NULL)
+  {
     return FALSE;
   }
-
+  head =(LINK *)malloc(sizeof(LINK));
+  klee_make_symbolic(head, sizeof(LINK), "head");
   // loop over keychain
-  for(current = head; current != NULL; current = current->next) {
-    if (access_key->access_key_store[0] == current->access_key.access_key_store[0]) {
+  for (current = head; current != NULL; current = current->next)
+  {
+    if (access_key->access_key_store[0] == current->access_key.access_key_store[0])
+    {
       return TRUE;
     }
   }
+
   return FALSE;
 }
 
 /**
-  Event handle called when the INIT phase is complete and the Access Key Protocol 
+  Event handle called when the INIT phase is complete and the Access Key Protocol
   must cease generating new keys.
 
   @param[in]  Event               Event structure
@@ -161,14 +170,13 @@ BOOLEAN DoesKeyExist (
 **/
 STATIC
 VOID
-EFIAPI
-ReadyToLock(
-  IN EFI_EVENT                        Event,
-  IN VOID                             *Context
-  )
+    EFIAPI
+    ReadyToLock(
+        IN EFI_EVENT Event,
+        IN VOID *Context)
 {
   accessKeyLock = TRUE;
-  //gBS->CloseEvent (Event);
+  // gBS->CloseEvent (Event);
 }
 
 /**
@@ -182,20 +190,20 @@ ReadyToLock(
 **/
 EFI_STATUS
 EFIAPI
-Demo1AccessKeyInit (
-  IN EFI_HANDLE                       ImageHandle,
-  IN EFI_SYSTEM_TABLE                 *SystemTable
-  )
+Demo1AccessKeyInit(
+    IN EFI_HANDLE ImageHandle,
+    IN EFI_SYSTEM_TABLE *SystemTable)
 {
-  EFI_STATUS        Status;
+  EFI_STATUS Status;
 
   //
   // Get Random Number Generator protocol
   //
- // Status = gBS->LocateProtocol (&gEfiRngProtocolGuid, NULL, (VOID **)&RngProtocol);
-  if (EFI_ERROR (Status) || (RngProtocol == NULL)) {
-    //DEBUG ((DEBUG_ERROR, "%a: Could not locate RNG prototocol, Status = %r\n", 
-    //  __FUNCTION__, Status));
+  // Status = gBS->LocateProtocol (&gEfiRngProtocolGuid, NULL, (VOID **)&RngProtocol);
+  if (EFI_ERROR(Status) || (RngProtocol == NULL))
+  {
+    // DEBUG ((DEBUG_ERROR, "%a: Could not locate RNG prototocol, Status = %r\n",
+    //   __FUNCTION__, Status));
     return Status;
   }
 
@@ -204,8 +212,9 @@ Demo1AccessKeyInit (
   //
   masterKey = AllocatePool(sizeof(DEMO1_ACCESS_KEY));
   Status = Demo1GenerateAccessKey(&gDemo1_Access_Key_Protocol, NULL, TRUE, masterKey);
-  if (EFI_ERROR (Status)) {
-   // DEBUG ((DEBUG_ERROR, "%a: Could not generate master key, Status = %r\n",
+  if (EFI_ERROR(Status))
+  {
+    // DEBUG ((DEBUG_ERROR, "%a: Could not generate master key, Status = %r\n",
     //  __FUNCTION__, Status));
     return Status;
   }
@@ -213,7 +222,7 @@ Demo1AccessKeyInit (
   //
   // Create an event using event group gDemo1AccessKeyReadyToLockGuid.
   //
-   ///////commented out for gcc run///////// 
+  ///////commented out for gcc run/////////
   // Status = gBS->CreateEventEx(
   //   EVT_NOTIFY_SIGNAL,                                      // Type
   //   TPL_NOTIFY,                                             // NotifyTpl
@@ -226,15 +235,16 @@ Demo1AccessKeyInit (
   //
   // Install Access Key Protocol
   //
-  ///////commented out for gcc run///////// 
+  ///////commented out for gcc run/////////
   // Status = gBS->InstallProtocolInterface (
   //   &ImageHandle,
   //   &gDemo1AccessKeyProtocolGuid,
   //   EFI_NATIVE_INTERFACE,
   //   &gDemo1_Access_Key_Protocol
   //   );
-  if (EFI_ERROR (Status)) {
-   // DEBUG ((DEBUG_ERROR, "%a: Could not install Access Key Protocol, Status = %r\n",
+  if (EFI_ERROR(Status))
+  {
+    // DEBUG ((DEBUG_ERROR, "%a: Could not install Access Key Protocol, Status = %r\n",
     //  __FUNCTION__, Status));
     return Status;
   }
@@ -252,9 +262,8 @@ Demo1AccessKeyInit (
 **/
 EFI_STATUS
 EFIAPI
-Demo1AccessKeyUnload (
-  IN EFI_HANDLE                       ImageHandle
-  )
+Demo1AccessKeyUnload(
+    IN EFI_HANDLE ImageHandle)
 {
   EFI_STATUS Status = EFI_SUCCESS;
   // Status = gBS->UninstallProtocolInterface (
@@ -265,7 +274,6 @@ Demo1AccessKeyUnload (
   FreePool(masterKey);
   return Status;
 }
-
 
 /**
   Generate Access Key Function.
@@ -285,42 +293,51 @@ Demo1AccessKeyUnload (
 EFI_STATUS
 EFIAPI
 Demo1GenerateAccessKey(
-  IN Demo1_Access_Key_PROTOCOL        *This,
-  IN EFI_HANDLE                       Controller,
-  IN BOOLEAN                          WriteAccess,
-  IN OUT DEMO1_ACCESS_KEY             *AccessKeyPtr // caller provided storage
-  )
+    IN Demo1_Access_Key_PROTOCOL *This,
+    IN EFI_HANDLE Controller,
+    IN BOOLEAN WriteAccess,
+    IN OUT DEMO1_ACCESS_KEY *AccessKeyPtr // caller provided storage
+)
 {
   EFI_STATUS Status = EFI_SUCCESS;
-  UINTN header=0;
+  UINTN header = 0;
 
   // Verify user has provided storage
-  if (AccessKeyPtr == NULL) {
+  if (AccessKeyPtr == NULL)
+  {
     return EFI_INVALID_PARAMETER;
   }
   // Verify ReadyToLock event has not occurred
-  if (accessKeyLock == TRUE) {
+  if (accessKeyLock == TRUE)
+  {
     return EFI_WRITE_PROTECTED;
   }
 
   // Generate random number
-  Status = RngProtocol->GetRNG (RngProtocol, NULL, KEYSIZE, (UINT8 *)&AccessKeyPtr->access_key_store);
-  if (EFI_ERROR (Status)) {
+  Status = RngProtocol->GetRNG(RngProtocol, NULL, KEYSIZE, (UINT8 *)&AccessKeyPtr->access_key_store);
+  if (EFI_ERROR(Status))
+  {
     return Status;
   }
 
   // Define magic for key
-  if (WriteAccess) {
+  if (WriteAccess)
+  {
     header = (ACCESS_KEY_MAGIC << MAGIC_SIZE) + WRITE_ACCESS;
-  } else {
+  }
+  else
+  {
     header = (ACCESS_KEY_MAGIC << MAGIC_SIZE) + READ_ACCESS;
   }
   AccessKeyPtr->access_key_store[1] = header;
 
   // Store key in keychain
-  if (AccessKeyPtr != masterKey) {
+  if (AccessKeyPtr != masterKey)
+  {
     InsertLast(AccessKeyPtr);
-  } else {
+  }
+  else
+  {
     InsertFirst(AccessKeyPtr);
   }
 
@@ -343,25 +360,29 @@ Demo1GenerateAccessKey(
 **/
 EFI_STATUS
 EFIAPI
-Demo1ValidateAccessKey (
-  IN Demo1_Access_Key_PROTOCOL        *This,
-  IN EFI_HANDLE                       Controller,
-  IN DEMO1_ACCESS_KEY                 *AccessKeyPtr,
-  IN BOOLEAN                          WriteAccess,
-  IN OUT BOOLEAN                      *Result
-  )
+Demo1ValidateAccessKey(
+    IN Demo1_Access_Key_PROTOCOL *This,
+    IN EFI_HANDLE Controller,
+    IN DEMO1_ACCESS_KEY *AccessKeyPtr,
+    IN BOOLEAN WriteAccess,
+    IN OUT BOOLEAN *Result)
 {
-  if ( Result == NULL ) {
+
+  if (Result == NULL)
+  {
     return EFI_INVALID_PARAMETER;
   }
   *Result = FALSE;
 
-  if (AccessKeyPtr == NULL) {
+  if (AccessKeyPtr == NULL)
+  {
     return EFI_INVALID_PARAMETER;
   }
+
   // It is not checking whether the key is present in the Key chain or not. Just checking with the given parameter
   // Check key permissions.
-  if ( WriteAccess && (AccessKeyPtr->access_key_store[1] == ((ACCESS_KEY_MAGIC << MAGIC_SIZE) | READ_ACCESS ) ) ) {
+  if (WriteAccess && (AccessKeyPtr->access_key_store[1] == ((ACCESS_KEY_MAGIC << MAGIC_SIZE) | READ_ACCESS)))
+  {
     return EFI_INVALID_PARAMETER;
   }
 
