@@ -184,15 +184,9 @@ int main()
         &ExampleVar_Value
         );
     printf("---------------------------------------------------\n");
-    if (EFI_ERROR (Status)) {
-        printf("Error in changing the variable \n");
-       // DEBUG ((DEBUG_ERROR, "%a: variable '%s' could not be written - bailing!\n", __FUNCTION__, ALICEMODE_VARNAME));
-        return Status;
-    }
    
-    //klee_assert(!EFI_ERROR (Status) && (my_access_key==my_fake_access_key));
-
-   // klee_assert(!EFI_ERROR (Status) && (ExampleVar_Value==1 || ExampleVar_Value==2));
+    // klee_assert(!EFI_ERROR (Status) && (my_access_key==my_fake_access_key));
+   klee_assert(!EFI_ERROR (Status) && (ExampleVar_Value==1 || ExampleVar_Value==2));
     printf("Set Access Variable Success\r\n");
     return EFI_SUCCESS;
 }
