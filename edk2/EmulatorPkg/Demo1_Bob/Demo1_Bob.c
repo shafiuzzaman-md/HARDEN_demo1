@@ -333,9 +333,10 @@ Demo1BobDataProvider(
   // Used for comparison checks
   UINTN IAddress = (UINTN)Address;
 
-  klee_make_symbolic(&gLoadImage, sizeof(gLoadImage), "gLoadImage");
+  gLoadImage = (EFI_LOADED_IMAGE_PROTOCOL*)malloc(sizeof(EFI_LOADED_IMAGE_PROTOCOL));
+  klee_make_symbolic(gLoadImage, sizeof(EFI_LOADED_IMAGE_PROTOCOL), "gLoadImage");
+
   UINTN IBase = (UINTN)gLoadImage->ImageBase;
- 
   VOID *Storage = NULL;
 
   if (Dest == NULL ) {
@@ -345,7 +346,7 @@ Demo1BobDataProvider(
   if ( IAddress < IBase ) {
     return EFI_ACCESS_DENIED;
   }
-  
+
   // invalid memory range check
   if ( IBase + gLoadImage->ImageSize < IAddress + Size ) {
     return EFI_ACCESS_DENIED;
@@ -368,21 +369,12 @@ Demo1BobDataProvider(
 int main(){
     UINTN *Address; 
     UINTN Size = sizeof(DEMO1_ACCESS_KEY); 
-    DEMO1_ACCESS_KEY *bobKey= malloc(sizeof(DEMO1_ACCESS_KEY));
-    klee_make_symbolic(bobKey, sizeof(DEMO1_ACCESS_KEY), "bobkey");
-    klee_assume(bobKey->access_key_store[1] = 0xDEC0DEBABB1E10AD); // KEY MAGIC and READ MAGIC
-
     DEMO1_ACCESS_KEY *dest= malloc(sizeof(DEMO1_ACCESS_KEY));
     klee_make_symbolic(dest, sizeof(DEMO1_ACCESS_KEY), "dest");
 
-    klee_print_expr("bobkey:", bobKey);
-
-    if(Demo1BobDataProvider(NULL, bobKey, (VOID **)&dest, Size) == EFI_SUCCESS){
-      DEMO1_ACCESS_KEY *updated_bobKey= malloc(sizeof(DEMO1_ACCESS_KEY));
-      updated_bobKey->access_key_store[0] =  dest->access_key_store[0];
-      updated_bobKey->access_key_store[1] = (ACCESS_KEY_MAGIC << MAGIC_SIZE) + WRITE_ACCESS;
-      bobKey = updated_bobKey;
-      klee_print_expr("Updated Bobkey:", bobKey);
+    if(Demo1BobDataProvider(NULL, (VOID *)&bobKey, (VOID **)&dest, Size) == EFI_SUCCESS){
+      dest->access_key_store[0] = (ACCESS_KEY_MAGIC << MAGIC_SIZE) + WRITE_ACCESS;
+      klee_print_expr("Key with write access", dest);
       klee_assert(0 && "Bobkey updated");
     }
 
