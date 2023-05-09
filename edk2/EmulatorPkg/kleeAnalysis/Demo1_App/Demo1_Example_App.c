@@ -76,7 +76,7 @@ int main()
 
     /* Generate Access Key */
     printf("Call Generate Access Key\r\n");
-    retval = Demo1GenerateAccessKey(AccessKeyProtocol, NULL, TRUE, my_access_key);
+    retval = Demo1GenerateAccessKey(AccessKeyProtocol, NULL, FALSE, my_access_key);
     if (retval != 0) {
         printf("Failed to generate access key\r\n");
         return EFI_ABORTED;
@@ -86,69 +86,113 @@ int main()
     
     /* Validate Access Key */
     printf("Call Validate Access Key \r\n");
-    Demo1ValidateAccessKey(AccessKeyProtocol, NULL, my_access_key, TRUE, &retbool);
+    Demo1ValidateAccessKey(AccessKeyProtocol, NULL, my_access_key, FALSE, &retbool);
     if (retbool == FALSE) {
         printf("Could not validate key\r\n");
         return EFI_ABORTED;
     }
     printf("I have a valid key\r\n");
 
-    /* Set Variable with Access Key */
-    printf("Call Set Access Variable \r\n");
-    UINTN ExampleVar_Value = 0xdeadbeef;
+//     /* Set Variable with Access Key */
+//     printf("Call Set Access Variable \r\n");
+//     UINTN ExampleVar_Value = 0xdeadbeef;
     
-    EFI_GUID  *VendorGuid;
-    EFI_STATUS Status  = mineVariableServiceSetVariable (
-        EXAMPLEAPP_VARNAME,
-        &VendorGuid,
-        EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_RUNTIME_ACCESS | EFI_VARIABLE_NON_VOLATILE,
-        my_access_key,
-        sizeof(UINTN),
-        &ExampleVar_Value
-        );
-    if (EFI_ERROR (Status)) {
-       // DEBUG ((DEBUG_ERROR, "%a: variable '%s' could not be written - bailing!\n", __FUNCTION__, EXAMPLEAPP_VARNAME));
-        return Status;
-    }
-    printf("Set Access Variable Success\r\n");
+//     EFI_GUID  *VendorGuid;
+//     EFI_STATUS Status  = mineVariableServiceSetVariable (
+//         EXAMPLEAPP_VARNAME,
+//         &VendorGuid,
+//         EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_RUNTIME_ACCESS | EFI_VARIABLE_NON_VOLATILE,
+//         my_access_key,
+//         sizeof(UINTN),
+//         &ExampleVar_Value
+//         );
+//     if (EFI_ERROR (Status)) {
+//         printf("Error in setting variable \n");
+//        // DEBUG ((DEBUG_ERROR, "%a: variable '%s' could not be written - bailing!\n", __FUNCTION__, EXAMPLEAPP_VARNAME));
+//         return Status;
+//     }
+//     printf("Set Access Variable Success %d \n", Status);
 
     /* Get Variable with Access Key */
-     printf("Call Get Access Variable \r\n");
-    UINTN   getExampleVar_Value = 0;
-    UINTN   BufferSize = sizeof(getExampleVar_Value);
-    Status = mineVariableServiceGetVariable (
-        EXAMPLEAPP_VARNAME,
-        &VendorGuid,
-        NULL,
-        my_access_key,
-        &BufferSize,
-        &getExampleVar_Value
-        );
-    if (EFI_ERROR (Status)) {
-       // DEBUG ((DEBUG_ERROR, "%a: variable '%s' could not be read - bailing!\n", __FUNCTION__, EXAMPLEAPP_VARNAME));
-        return Status;
-    }
-    printf("Get Access Variable Success - 0x%08llx\r\n", getExampleVar_Value);
+    // printf("Call Get Access Variable \r\n");
+    // UINTN   getExampleVar_Value = 0;
+    // UINTN   BufferSize = sizeof(getExampleVar_Value);
+    // // EFI_GUID  *VendorGuid;
+    //  Status= mineVariableServiceGetVariable (
+    //     EXAMPLEAPP_VARNAME,
+    //     &VendorGuid,
+    //     NULL,
+    //     my_access_key,
+    //     &BufferSize,
+    //     &getExampleVar_Value
+    //     );
+    // if (EFI_ERROR (Status)) {
+    //     printf("Error in getting variable \n");
+    //    // DEBUG ((DEBUG_ERROR, "%a: variable '%s' could not be read - bailing!\n", __FUNCTION__, EXAMPLEAPP_VARNAME));
+    //     return Status;
+    // }
+    // printf("Get Access Variable Success - 0x%08llx\r\n", getExampleVar_Value);
 
     printf("Example Complete\r\n");
     // Known key address for Bob so find get the key stored there
-    UINTN *Address = NULL;
-    UINTN Size = sizeof(DEMO1_ACCESS_KEY);
-    DEMO1_ACCESS_KEY *Data= malloc(Size);
-    //Loop through all of the address and save the key if the header matches a key header
-    for(UINTN addr = 0; addr < MAX_UINTN; addr += Size)
-    {
-        Status = Demo1BobDataProvider(BobProtocol, (VOID *)addr, (VOID **)&Data, Size);
-        if(Data->access_key_store[1] == 0xDEC0DEBABB1E10AD)
-        {
-            Address = (UINTN *)addr;
-            Print(L"Found Bobs Key: (0x%016llx..%016llx) \r\n", Data->access_key_store[0], Data->access_key_store[1]);
-            Print (L"Keys Address: 0x%016llx\n", Address);
-            break;
-        }
-    }
+    // UINTN *Address = NULL;
+    // UINTN Size = sizeof(DEMO1_ACCESS_KEY);
+    // DEMO1_ACCESS_KEY *Data= malloc(Size);
+    // //Loop through all of the address and save the key if the header matches a key header
+    // for(UINTN addr = 0; addr < MAX_UINTN; addr += Size)
+    // {
+    //     EFI_STATUS Status = Demo1BobDataProvider(BobProtocol, (VOID *)addr, (VOID **)&Data, Size);
+    //     if(Data->access_key_store[1] == 0xDEC0DEBABB1E10AD)
+    //     {
+    //         Address = (UINTN *)addr;
+    //         Print(L"Found Bobs Key: (0x%016llx..%016llx) \r\n", Data->access_key_store[0], Data->access_key_store[1]);
+    //         Print (L"Keys Address: 0x%016llx\n", Address);
+    //         break;
+    //     }
+    // }
     // Change key from read to write
-    Data->access_key_store[1] = (ACCESS_KEY_MAGIC << MAGIC_SIZE) + WRITE_ACCESS;
-    Print(L"Modified key to have write access");
+    DEMO1_ACCESS_KEY *my_fake_access_key=malloc(sizeof(DEMO1_ACCESS_KEY));
+    // my_fake_access_key->access_key_store[0] =  my_access_key->access_key_store[0];
+    // my_fake_access_key->access_key_store[1] =  my_access_key->access_key_store[1];
+    // my_fake_access_key->access_key_store[1] = (ACCESS_KEY_MAGIC << MAGIC_SIZE) + WRITE_ACCESS;
+    klee_make_symbolic(my_fake_access_key, sizeof(DEMO1_ACCESS_KEY), "my_fake_access_key");
+    /* Validate Access Key */
+    printf("-----------------------------------------------\n");
+    printf("Call Validate my fake Access Key \r\n");
+    EFI_STATUS retvalCheck = Demo1ValidateAccessKey(AccessKeyProtocol, NULL, my_fake_access_key, TRUE, &retbool);
+    if (retbool == FALSE) {
+        printf("Could not validate key\r\n");
+        return EFI_ABORTED;
+    }
+    printf("I have a valid key\r\n");
+    printf("Modified key to have write access\n");
+    // klee_assert(my_access_key->access_key_store[1]==my_fake_access_key->access_key_store[1]);
+    printf("-----------------------------------------------\n");
+    UINTN ExampleVar_Value = 0;
+    printf("Setting Alice mode variable to - 0x%08llx\r\n", ExampleVar_Value);
+    UINTN BufferSize = sizeof(ExampleVar_Value);
+    EFI_GUID  *gAliceVariableGuid;
+    printf("---------------------------------------------------\n");
+    printf("Calling mineVariableServiceSetVariable\n");
+    klee_make_symbolic(&ExampleVar_Value, sizeof(ExampleVar_Value), "ExampleVar_Value");
+    EFI_STATUS Status  = mineVariableServiceSetVariable (
+        ALICEMODE_VARNAME,
+        &gAliceVariableGuid,
+        EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_RUNTIME_ACCESS | EFI_VARIABLE_NON_VOLATILE,
+        my_fake_access_key,
+        BufferSize,
+        &ExampleVar_Value
+        );
+    printf("---------------------------------------------------\n");
+    if (EFI_ERROR (Status)) {
+        printf("Error in changing the variable \n");
+       // DEBUG ((DEBUG_ERROR, "%a: variable '%s' could not be written - bailing!\n", __FUNCTION__, ALICEMODE_VARNAME));
+        return Status;
+    }
+   
+    //klee_assert(!EFI_ERROR (Status) && (my_access_key==my_fake_access_key));
+
+   // klee_assert(!EFI_ERROR (Status) && (ExampleVar_Value==1 || ExampleVar_Value==2));
+    printf("Set Access Variable Success\r\n");
     return EFI_SUCCESS;
 }

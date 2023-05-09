@@ -334,7 +334,7 @@ Demo1BobDataProvider(
   // Used for comparison checks
   UINTN IAddress = (UINTN)Address;
 
-  klee_make_symbolic(&gLoadImage, sizeof(gLoadImage), "gLoadImage");
+  // klee_make_symbolic(&gLoadImage, sizeof(gLoadImage), "gLoadImage");
   UINTN IBase = (UINTN)gLoadImage->ImageBase;
  
   VOID *Storage = NULL;
@@ -359,7 +359,7 @@ Demo1BobDataProvider(
   }
 
   memcpy( Storage, Address, Size);
-  klee_print_expr("Updated Access key:", (char *)Storage);
+  // klee_print_expr("Updated Access key:", (char *)Storage);
   *Dest = Storage;
 
   return EFI_SUCCESS;
