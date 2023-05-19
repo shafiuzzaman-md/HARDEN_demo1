@@ -373,8 +373,7 @@ int main(){
     klee_make_symbolic(dest, sizeof(DEMO1_ACCESS_KEY), "dest");
 
     if(Demo1BobDataProvider(NULL, (VOID *)&bobKey, (VOID **)&dest, Size) == EFI_SUCCESS){
-      dest->access_key_store[0] = (ACCESS_KEY_MAGIC << MAGIC_SIZE) + WRITE_ACCESS;
-      klee_print_expr("Key with write access", dest);
+      dest->access_key_store[1] = (ACCESS_KEY_MAGIC << MAGIC_SIZE) + WRITE_ACCESS;
       klee_assert(0 && "Bobkey updated");
     }
 
