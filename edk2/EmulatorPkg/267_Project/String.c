@@ -9,7 +9,6 @@
 #include "BaseLibInternals.h"
 #include "klee/klee.h"
 #include <stdlib.h>
-#include "SafeString.c"
 /**
   Returns the length of a Null-terminated Unicode string.
 

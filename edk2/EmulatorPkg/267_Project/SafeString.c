@@ -8,10 +8,12 @@
 
 #include "BaseLibInternals.h"
 #include "klee/klee.h"
+#include <stdlib.h>
+#include "String.c"
 
 #define RSIZE_MAX  (PcdGet32 (PcdMaximumUnicodeStringLength))
 
-#define ASCII_RSIZE_MAX  (PcdGet32 (PcdMaximumAsciiStringLength))
+// #define ASCII_RSIZE_MAX  (PcdGet32 (PcdMaximumAsciiStringLength))
 
 #define SAFE_STRING_CONSTRAINT_CHECK(Expression, Status)  \
   do { \
@@ -275,19 +277,7 @@ StrCpyS (
   return RETURN_SUCCESS;
 }
 
-int main(){
-  VOID  *Destination = malloc(sizeof(VOID)); 
-  VOID  *Source = malloc(sizeof(VOID)); 
-  UINTN DestMax;
 
-  klee_make_symbolic(Destination, sizeof(VOID), "Destination");
-  klee_make_symbolic(Source, sizeof(VOID), "Source");
-  klee_make_symbolic(&DestMax, sizeof(UINTN), "DestMax");
-  StrCpyS(Destination, Source, DestMax);
-  klee_assert( StrCpyS(Destination, Source, DestMax) == RETURN_SUCCESS);
-
-  return 0;
-}
 
 /**
   Copies not more than Length successive char from the string pointed to by
@@ -3473,7 +3463,6 @@ AsciiStrToGuid (
     return RETURN_UNSUPPORTED;
   }
 
-  //
   // Convert big-endian to little-endian.
   //
   LocalGuid.Data1 = SwapBytes32 (LocalGuid.Data1);
@@ -3529,6 +3518,19 @@ AsciiStrToGuid (
   return RETURN_SUCCESS;
 }
 
+
+void verify_AsciiStrToGuid(){
+  CHAR8  *String = malloc(sizeof(CHAR8));
+  GUID   *Guid = malloc(sizeof(GUID));
+
+
+  klee_make_symbolic(String, sizeof(CHAR8), "String");
+  klee_make_symbolic(Guid, sizeof(GUID), "Guid");
+  AsciiStrToGuid(String, Guid);
+  //klee_assume(MaxBufferSize > sizeof(Buffer));
+  //klee_assert( AsciiStrHexToBytes(String, Length, Buffer, MaxBufferSize) != RETURN_SUCCESS);
+}
+
 /**
   Convert a Null-terminated ASCII hexadecimal string to a byte array.
 
@@ -3570,46 +3572,31 @@ AsciiStrHexToBytes (
   )
 {
   UINTN  Index;
-
-  //
   // 1. None of String or Buffer shall be a null pointer.
-  //
   SAFE_STRING_CONSTRAINT_CHECK ((String != NULL), RETURN_INVALID_PARAMETER);
   SAFE_STRING_CONSTRAINT_CHECK ((Buffer != NULL), RETURN_INVALID_PARAMETER);
-
-  //
   // 2. Length shall not be greater than ASCII_RSIZE_MAX.
-  //
-  // if (ASCII_RSIZE_MAX != 0) {
-  //   SAFE_STRING_CONSTRAINT_CHECK ((Length <= ASCII_RSIZE_MAX), RETURN_INVALID_PARAMETER);
-  // }
+  int ASCII_RSIZE_MAX = MAX_INT64;
+   if (ASCII_RSIZE_MAX != 0) {
+     SAFE_STRING_CONSTRAINT_CHECK ((Length <= ASCII_RSIZE_MAX), RETURN_INVALID_PARAMETER);
+   }
 
-  //
   // 3. Length shall not be odd.
-  //
   SAFE_STRING_CONSTRAINT_CHECK (((Length & BIT0) == 0), RETURN_INVALID_PARAMETER);
 
-  //
   // 4. MaxBufferSize shall equal to or greater than Length / 2.
-  //
   SAFE_STRING_CONSTRAINT_CHECK ((MaxBufferSize >= Length / 2), RETURN_BUFFER_TOO_SMALL);
 
-  //
   // 5. String shall not contains invalid hexadecimal digits.
-  //
   for (Index = 0; Index < Length; Index++) {
     if (!InternalAsciiIsHexaDecimalDigitCharacter (String[Index])) {
       break;
     }
   }
-
   if (Index != Length) {
     return RETURN_UNSUPPORTED;
   }
-
-  //
   // Convert the hex string to bytes.
-  //
   for (Index = 0; Index < Length; Index++) {
     //
     // For even characters, write the upper nibble for each buffer byte,
@@ -3621,6 +3608,49 @@ AsciiStrHexToBytes (
       Buffer[Index / 2] |= (UINT8)InternalAsciiHexCharToUintn (String[Index]);
     }
   }
-
   return RETURN_SUCCESS;
+}
+
+void invalid_hexadecimal_character_should_RETURN_UNSUPPORTED (){
+  CHAR8  *String;
+  UINTN   Length;
+  UINT8   Buffer;
+  UINTN   MaxBufferSize;
+  RETURN_STATUS status;
+  klee_make_symbolic(&Length, sizeof(UINTN), "Length");
+  klee_make_symbolic(&MaxBufferSize, sizeof(UINTN), "MaxBufferSize");
+  String = "gg";
+  status = AsciiStrHexToBytes(String, Length, Buffer, MaxBufferSize);
+  klee_assert( status != RETURN_SUCCESS);
+}
+
+void test_all_outputs (){
+  CHAR8  *String = malloc(sizeof(CHAR8));
+  UINTN   Length;
+  UINT8   Buffer;
+  UINTN   MaxBufferSize;
+  RETURN_STATUS status;
+  klee_make_symbolic(String, sizeof(CHAR8), "String");
+  klee_make_symbolic(&Length, sizeof(UINTN), "Length");
+  klee_make_symbolic(&MaxBufferSize, sizeof(UINTN), "MaxBufferSize");
+  status = AsciiStrHexToBytes(String, Length, Buffer, MaxBufferSize);
+  klee_assert( status != RETURN_SUCCESS);
+  klee_assert( status != RETURN_INVALID_PARAMETER);
+  klee_assert( status != RETURN_BUFFER_TOO_SMALL);
+  klee_assert( status != RETURN_UNSUPPORTED);
+}
+
+void verify_AsciiStrHexToBytes(){
+  //null_string_should_RETURN_INVALID_PARAMETER();
+ // null_data_should_RETURN_INVALID_PARAMETER();
+  //odd_length_should_RETURN_INVALID_PARAMETER();
+  //length_greater_than_PcdMaximumAsciiStringLength_RETURN_INVALID_PARAMETER();
+  invalid_hexadecimal_character_should_RETURN_UNSUPPORTED ();
+  //test_all_outputs();
+}
+
+
+int main(){
+  verify_AsciiStrHexToBytes();
+  //verify_AsciiStrToGuid();
 }

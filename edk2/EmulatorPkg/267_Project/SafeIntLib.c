@@ -78,33 +78,14 @@ SafeInt8ToUint8 (
 }
 
 
-int main(){
-  //   Operand = 0x5b;
-  // Result  = 0;
+void verify_SafeInt8ToUint8(){
   RETURN_STATUS  Status;
-  // ASSERT_EQ (Status, RETURN_SUCCESS);
-  // ASSERT_EQ (0x5b, Result);
-
   INT8   Operand;
   UINT8   *Result;
-  
   klee_make_symbolic(&Operand, sizeof(INT8), "Operand");
   klee_assume(Operand >= 0);
   Status  = SafeInt8ToUint8 (Operand, &Result);
-  
   klee_assert(Status == RETURN_SUCCESS);
- 
-  // klee_assert((UINTN)Operand != RETURN_SUCCESS);
-  // klee_assert((UINTN)Operand != Result);
-  //
-  // Otherwise should result in an error status
-  //
-  // Operand = (-1537977259);
-  // Status  = SafeInt32ToUintn (Operand, &Result);
-  // ASSERT_EQ (RETURN_BUFFER_TOO_SMALL, Status);
-
-  
-
   return 0;
 }
 
