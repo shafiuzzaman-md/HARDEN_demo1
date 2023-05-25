@@ -2,20 +2,24 @@
   (:predicates
     (within-range ?addr - address)
     (non-null ?ptr - dest)
+    (gloadimage-exists)  ; Predicate to represent the existence of gLoadImage
+    (within-valid-range ?addr - address ?size - number)  ; Represents whether the address and size are within the valid range
   )
   
   ; Define actions
-  (:action scan-memory
+  (:action provide-data
     :parameters
       (?addr - address
        ?dest - dest
        ?size - number)
-    :precondition
+     :precondition
       (and
-        ; Check if address is within range
-        (within-range ?addr)
-        ; Check if destination pointer is valid
+        ; Check if destination pointer is non-NULL
         (non-null ?dest)
+        ; Check if gLoadImage exists
+        (gloadimage-exists)
+        ; Check if address and size are within the valid range of gLoadImage
+        (within-valid-range ?addr ?size)
       )
     :effect
       (and
