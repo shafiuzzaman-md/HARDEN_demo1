@@ -13,8 +13,9 @@ Revision History: 0.1
 
 #include "Demo1_Bob.h"
 #include "Protocol/LoadedImage.h"
-#include "klee/klee.h"
+
 #include "../Demo1_Access_Key/Demo1_Access_Key.c"
+//#include "../../BaseTools/Source/C/Common/CommonLib.h"
 // PRODUCED
 Demo1_Bob_PROTOCOL
 gDemo1_Bob_Protocol = {
@@ -357,26 +358,7 @@ Demo1BobDataProvider(
   if ( Storage == NULL ) {
     return EFI_INVALID_PARAMETER;
   }
-
   memcpy( Storage, Address, Size);
-
   *Dest = Storage;
-
   return EFI_SUCCESS;
-}
-
-
-int main(){
-    UINTN *Address; 
-    UINTN Size = sizeof(DEMO1_ACCESS_KEY); 
-    DEMO1_ACCESS_KEY *dest= malloc(sizeof(DEMO1_ACCESS_KEY));
-    klee_make_symbolic(dest, sizeof(DEMO1_ACCESS_KEY), "dest");
-
-    if(Demo1BobDataProvider(NULL, (VOID *)&bobKey, (VOID **)&dest, Size) == EFI_SUCCESS){
-      dest->access_key_store[1] = (ACCESS_KEY_MAGIC << MAGIC_SIZE) + WRITE_ACCESS;
-      klee_assert(0 && "Bobkey updated");
-    }
-
-  
-  return 0;
 }

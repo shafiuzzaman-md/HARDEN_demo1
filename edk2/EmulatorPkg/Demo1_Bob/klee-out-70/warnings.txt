@@ -1,0 +1,26 @@
+KLEE: WARNING: undefined reference to function: AllocatePool
+KLEE: WARNING: undefined reference to function: CopyMem
+KLEE: WARNING: undefined reference to function: DebugAssert
+KLEE: WARNING: undefined reference to function: DebugAssertEnabled
+KLEE: WARNING: undefined reference to function: DebugPrint
+KLEE: WARNING: undefined reference to function: DebugPrintEnabled
+KLEE: WARNING: undefined reference to function: DebugPrintLevelEnabled
+KLEE: WARNING: undefined reference to function: FreePool
+KLEE: WARNING: undefined reference to function: __syscall_rt_sigaction
+KLEE: WARNING: undefined reference to function: close
+KLEE: WARNING: undefined reference to function: fcntl
+KLEE: WARNING: undefined reference to function: fstat
+KLEE: WARNING: undefined reference to function: ioctl
+KLEE: WARNING: undefined reference to function: lseek64
+KLEE: WARNING: undefined reference to function: mkdir
+KLEE: WARNING: undefined reference to function: open
+KLEE: WARNING: undefined reference to function: open64
+KLEE: WARNING: undefined reference to function: read
+KLEE: WARNING: undefined reference to function: sigprocmask
+KLEE: WARNING: undefined reference to function: stat
+KLEE: WARNING: undefined reference to function: write
+KLEE: WARNING: undefined reference to function: kill (UNSAFE)!
+KLEE: WARNING: executable has module level assembly (ignoring)
+KLEE: WARNING ONCE: calling external: ioctl(0, 21505, 94665048055488) at libc/termios/tcgetattr.c:43 12
+KLEE: WARNING ONCE: calling __user_main with extra arguments.
+KLEE: WARNING ONCE: Alignment of memory from call "malloc" is not modelled. Using alignment of 8.

@@ -1,0 +1,7 @@
+Error: ASSERTION FAIL: 0 && "Bobkey updated"
+File: Demo1_Bob.c
+Line: 379
+assembly.ll line: 1045
+State: 3
+Stack: 
+	#000001045 in main() at Demo1_Bob.c:379

@@ -1,0 +1,5 @@
+KLEE: Using Z3 solver backend
+KLEE: ERROR: Demo1_Bob.c:390: memory error: out of bound pointer
+KLEE: NOTE: now ignoring this error at this location
+KLEE: ERROR: klee/runtime/Freestanding/memcpy.c:17: memory error: out of bound pointer
+KLEE: NOTE: now ignoring this error at this location

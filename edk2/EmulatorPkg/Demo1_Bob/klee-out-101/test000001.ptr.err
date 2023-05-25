@@ -1,0 +1,12 @@
+Error: memory error: out of bound pointer
+File: Demo1_Bob.c
+Line: 396
+assembly.ll line: 1100
+State: 1
+Stack: 
+	#000001100 in read_bobkey_addr_through_Demo1BobDataProvider() at Demo1_Bob.c:396
+	#100001142 in main() at Demo1_Bob.c:414
+Info: 
+	address: 12370169555311111083
+	next: object at 94374118460704 of size 16
+		MO65[16] allocated at global:.str.13

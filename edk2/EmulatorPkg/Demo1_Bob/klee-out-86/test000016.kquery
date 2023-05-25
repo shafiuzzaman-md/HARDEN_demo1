@@ -1,0 +1,29 @@
+array address[8] : w32 -> w8 = symbolic
+array gLoadImage[96] : w32 -> w8 = symbolic
+(query [(Eq false
+             (Ult N0:(ReadLSB w64 0 address)
+                  N1:(ReadLSB w64 64 gLoadImage)))
+         (Eq false
+             (Ult (Add w64 N1
+                           (ReadLSB w64 72 gLoadImage))
+                  (Add w64 16 N0)))
+         (Eq false
+             (Ult (Add w64 18446649503199236752 N0) 12))
+         (Eq false
+             (Ult (Add w64 18446649503199236736 N0) 11))
+         (Ult (Add w64 18446649503199236720 N0) 16)
+         (Ult (Add w64 18446649503199236721 N0) 16)
+         (Ult (Add w64 18446649503199236722 N0) 16)
+         (Ult (Add w64 18446649503199236723 N0) 16)
+         (Ult (Add w64 18446649503199236724 N0) 16)
+         (Ult (Add w64 18446649503199236725 N0) 16)
+         (Ult (Add w64 18446649503199236726 N0) 16)
+         (Ult (Add w64 18446649503199236727 N0) 16)
+         (Ult (Add w64 18446649503199236728 N0) 16)
+         (Ult (Add w64 18446649503199236729 N0) 16)
+         (Ult (Add w64 18446649503199236730 N0) 16)
+         (Ult (Add w64 18446649503199236731 N0) 16)
+         (Ult (Add w64 18446649503199236732 N0) 16)
+         (Eq false
+             (Ult (Add w64 18446649503199236733 N0) 16))]
+        false)

@@ -1,0 +1,8 @@
+Error: ASSERTION FAIL: Demo1BobDataProvider(NULL, (VOID *)&bobKey, (VOID **)&dest, size) != EFI_SUCCESS
+File: Demo1_Bob.c
+Line: 373
+assembly.ll line: 1041
+State: 3
+Stack: 
+	#000001041 in read_through_Demo1BobDataProvider(94134802639360) at Demo1_Bob.c:373
+	#100001059 in main() at Demo1_Bob.c:379

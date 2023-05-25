@@ -1,0 +1,11 @@
+KLEE: WARNING: undefined reference to function: AllocatePool
+KLEE: WARNING: undefined reference to function: CopyMem
+KLEE: WARNING: undefined reference to function: DebugAssert
+KLEE: WARNING: undefined reference to function: DebugAssertEnabled
+KLEE: WARNING: undefined reference to function: DebugPrint
+KLEE: WARNING: undefined reference to function: DebugPrintEnabled
+KLEE: WARNING: undefined reference to function: DebugPrintLevelEnabled
+KLEE: WARNING: undefined reference to function: FreePool
+KLEE: WARNING: undefined reference to function: printf
+KLEE: WARNING ONCE: Alignment of memory from call "malloc" is not modelled. Using alignment of 8.
+KLEE: WARNING ONCE: calling external: printf(93918202458464, 93918183058992, 0) at Demo1_Bob.c:383 7

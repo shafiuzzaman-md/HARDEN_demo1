@@ -1,0 +1,4 @@
+array gLoadImage[96] : w32 -> w8 = symbolic
+(query [(Ult 94390367440272
+              (ReadLSB w64 64 gLoadImage))]
+        false)

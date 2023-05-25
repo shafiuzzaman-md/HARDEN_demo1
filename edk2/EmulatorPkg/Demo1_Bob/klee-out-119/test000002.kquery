@@ -1,0 +1,8 @@
+array gLoadImage[96] : w32 -> w8 = symbolic
+(query [(Eq false
+             (Ult 93965027880352
+                  N0:(ReadLSB w64 64 gLoadImage)))
+         (Ult (Add w64 N0
+                       (ReadLSB w64 72 gLoadImage))
+              93965027880360)]
+        false)

@@ -1,0 +1,23 @@
+/home/hira/Research/klee_build/bin/klee --write-test-info --write-paths --write-smt2s --write-cov --write-cvcs --write-kqueries --smtlib-human-readable Demo1_Bob.bc
+PID: 162689
+Using monotonic steady clock with 1/1000000000s resolution
+Started: 2023-05-24 11:14:03
+BEGIN searcher description
+<InterleavedSearcher> containing 2 searchers:
+RandomPathSearcher
+WeightedRandomSearcher::CoveringNew
+</InterleavedSearcher>
+END searcher description
+Finished: 2023-05-24 11:28:20
+Elapsed: 00:14:17
+KLEE: done: explored paths = 621
+KLEE: done: avg. constructs per query = 298
+KLEE: done: total queries = 38701
+KLEE: done: valid queries = 37653
+KLEE: done: invalid queries = 1048
+KLEE: done: query cex = 38701
+
+KLEE: done: total instructions = 30874
+KLEE: done: completed paths = 126
+KLEE: done: partially completed paths = 495
+KLEE: done: generated tests = 127

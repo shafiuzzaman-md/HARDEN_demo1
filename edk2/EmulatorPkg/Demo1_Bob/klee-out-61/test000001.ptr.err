@@ -1,0 +1,11 @@
+Error: memory error: out of bound pointer
+File: Demo1_Bob.c
+Line: 390
+assembly.ll line: 1069
+State: 1
+Stack: 
+	#000001069 in main() at Demo1_Bob.c:390
+Info: 
+	address: 0
+	next: object at 94006280932064 of size 12
+		MO66[12] allocated at global:.str.15
