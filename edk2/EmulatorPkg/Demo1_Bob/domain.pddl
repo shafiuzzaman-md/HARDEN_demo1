@@ -7,7 +7,7 @@
   )
   
   ; Define actions
-  (:action provide-data
+  (:action scan-memory
     :parameters
       (?addr - address
        ?dest - dest
