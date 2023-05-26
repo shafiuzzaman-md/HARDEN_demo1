@@ -9,11 +9,11 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #ifndef _EFI_COMMON_LIB_H
 #define _EFI_COMMON_LIB_H
 
-#include <Common/UefiBaseTypes.h>
-#include <Common/BuildVersion.h>
-#include <assert.h>
+#include "Common/UefiBaseTypes.h"
+#include "Common/BuildVersion.h"
+//#include <assert.h>
 #ifndef _WIN32
-#include <limits.h>
+//#include <limits.h>
 #endif
 
 #define PRINTED_GUID_BUFFER_SIZE  37  // including null-termination
@@ -41,7 +41,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #define IS_SLASH(a)                ((a) == L'/')
 #define IS_NULL(a)                 ((a) == L'\0')
 
-#define ASSERT(x) assert(x)
+//#define ASSERT(x) assert(x)
 
 #ifdef __cplusplus
 extern "C" {

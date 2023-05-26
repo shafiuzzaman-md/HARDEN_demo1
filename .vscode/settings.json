@@ -2,6 +2,11 @@
     "files.associations": {
         "demo1_alice.h": "c",
         "cstring": "c",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "stdlib.h": "c",
+        "uefibasetypes.h": "c",
+        "assert.h": "c",
+        "limits.h": "c",
+        "klee.h": "c"
     }
 }
