@@ -7,13 +7,14 @@
   )
   
   ; Define actions
-  (:action scan-memory
+  (:action call_scan_memory
     :parameters
       (?addr - address
        ?dest - dest
        ?size - number)
      :precondition
       (and
+        (fcall ScanMemoryForKey) 
         ; Check if destination pointer is non-NULL
         (non-null ?dest)
         ; Check if gLoadImage exists
