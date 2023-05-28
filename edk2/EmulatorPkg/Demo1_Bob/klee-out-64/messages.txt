@@ -1,3 +1,0 @@
-KLEE: Using Z3 solver backend
-KLEE: ERROR: ./../Demo1_Access_Key/Demo1_Access_Key.c:317: memory error: out of bound pointer
-KLEE: NOTE: now ignoring this error at this location

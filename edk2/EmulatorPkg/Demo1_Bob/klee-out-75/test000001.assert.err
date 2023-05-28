@@ -1,8 +1,0 @@
-Error: ASSERTION FAIL: data == &bobKey
-File: Demo1_Bob.c
-Line: 386
-assembly.ll line: 1097
-State: 1
-Stack: 
-	#000001097 in read_through_Demo1BobDataProvider() at Demo1_Bob.c:386
-	#100001114 in main() at Demo1_Bob.c:392

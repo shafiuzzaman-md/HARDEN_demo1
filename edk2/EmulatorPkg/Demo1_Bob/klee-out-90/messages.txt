@@ -1,3 +1,0 @@
-KLEE: Using Z3 solver backend
-KLEE: ERROR: Demo1_Bob.c:393: memory error: out of bound pointer
-KLEE: NOTE: now ignoring this error at this location

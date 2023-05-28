@@ -1,8 +1,0 @@
-Error: ASSERTION FAIL: Demo1BobDataProvider(NULL, (VOID *)address, (VOID **)&dest, size) != EFI_SUCCESS
-File: Demo1_Bob.c
-Line: 385
-assembly.ll line: 1099
-State: 4
-Stack: 
-	#000001099 in read_through_Demo1BobDataProvider(94429899418256) at Demo1_Bob.c:385
-	#100001117 in main() at Demo1_Bob.c:391

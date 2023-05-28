@@ -1,3 +1,0 @@
-KLEE: Using Z3 solver backend
-KLEE: ERROR: Demo1_Bob.c:373: ASSERTION FAIL: Demo1BobDataProvider(NULL, (VOID *)&bobKey, (VOID **)&dest, size) != EFI_SUCCESS
-KLEE: NOTE: now ignoring this error at this location

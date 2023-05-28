@@ -1,9 +1,0 @@
-KLEE: WARNING: undefined reference to function: AllocatePool
-KLEE: WARNING: undefined reference to function: CopyMem
-KLEE: WARNING: undefined reference to function: DebugAssert
-KLEE: WARNING: undefined reference to function: DebugAssertEnabled
-KLEE: WARNING: undefined reference to function: DebugPrint
-KLEE: WARNING: undefined reference to function: DebugPrintEnabled
-KLEE: WARNING: undefined reference to function: DebugPrintLevelEnabled
-KLEE: WARNING: undefined reference to function: FreePool
-KLEE: WARNING ONCE: Alignment of memory from call "malloc" is not modelled. Using alignment of 8.

@@ -1,3 +1,0 @@
-KLEE: Using Z3 solver backend
-KLEE: ERROR: klee/runtime/Freestanding/memcpy.c:17: memory error: out of bound pointer
-KLEE: NOTE: now ignoring this error at this location

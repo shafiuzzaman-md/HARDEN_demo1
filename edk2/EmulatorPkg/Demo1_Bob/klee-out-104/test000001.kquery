@@ -1,4 +1,0 @@
-array gLoadImage[96] : w32 -> w8 = symbolic
-(query [(Ult 94621734038416
-              (ReadLSB w64 64 gLoadImage))]
-        false)
