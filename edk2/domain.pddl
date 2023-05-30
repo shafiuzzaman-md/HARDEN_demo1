@@ -1,5 +1,5 @@
 (define (domain uefi)
-   (:constants RuntimeServicesGetAccessVariable WRITE READ DEC0DEBABB1E10AD zero one ScanMemoryForKey BobKey RngProtocol_Addr ptrRngProtocol56397 ptrRngProtocol RuntimeServicesSetAccessVariable CopyMem GenerateAccessKey Lockpin)
+   (:constants RuntimeServicesGetAccessVariable WRITE READ READ_MAGIC zero one ScanMemoryForKey BobKey RngProtocol_Addr ptrRngProtocol56397 ptrRngProtocol RuntimeServicesSetAccessVariable CopyMem GenerateAccessKey Lockpin)
    (:predicates (api_call ?c)
 		(fcall ?c)
 		(farg ?c ?n ?v)
@@ -36,7 +36,7 @@
        :precondition 
         (and 
             (fcall ScanMemoryForKey) 
-            (farg ScanMemoryForKey zero DEC0DEBABB1E10AD)
+            (farg ScanMemoryForKey one READ_MAGIC)
         )
        :effect 
         (key BobKey))

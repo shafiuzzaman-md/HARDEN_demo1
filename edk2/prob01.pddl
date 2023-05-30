@@ -10,6 +10,6 @@
           (efi_var ALICE_MODE)
           (points_to ALICE_MODE ptrGlobal49804)
           (points_to_const ptrGlobal49804 RUN_MODE)
-          ;(write_primitive CopyMem zero)
+          (write_primitive CopyMem zero)
           )
    (:goal (key_permissions ATTACKER WRITE)))

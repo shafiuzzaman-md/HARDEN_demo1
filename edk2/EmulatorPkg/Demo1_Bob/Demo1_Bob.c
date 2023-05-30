@@ -15,6 +15,9 @@ Revision History: 0.1
 #include "Protocol/LoadedImage.h"
 
 #include "../Demo1_Access_Key/Demo1_Access_Key.c"
+#include "klee/klee.h"
+#include <stdlib.h>
+#include <string.h>
 //#include "../../BaseTools/Source/C/Common/CommonLib.h"
 // PRODUCED
 Demo1_Bob_PROTOCOL
@@ -308,7 +311,6 @@ Demo1BobUnload (
   // );
   return Status;
 }
-
 /**
   API call for Bob to retrieve data from Alice.
 
@@ -333,32 +335,30 @@ Demo1BobDataProvider(
 
   // Used for comparison checks
   UINTN IAddress = (UINTN)Address;
-
-  gLoadImage = (EFI_LOADED_IMAGE_PROTOCOL*)malloc(sizeof(EFI_LOADED_IMAGE_PROTOCOL));
-  klee_make_symbolic(gLoadImage, sizeof(EFI_LOADED_IMAGE_PROTOCOL), "gLoadImage");
-
   UINTN IBase = (UINTN)gLoadImage->ImageBase;
   VOID *Storage = NULL;
 
   if (Dest == NULL ) {
     return EFI_INVALID_PARAMETER;
   }
-  // invalid memory range check
+
   if ( IAddress < IBase ) {
     return EFI_ACCESS_DENIED;
   }
 
-  // invalid memory range check
   if ( IBase + gLoadImage->ImageSize < IAddress + Size ) {
     return EFI_ACCESS_DENIED;
   }
 
-  Storage = (VOID*)malloc(Size);
+  Storage = malloc(Size);
 
   if ( Storage == NULL ) {
     return EFI_INVALID_PARAMETER;
   }
+
   memcpy( Storage, Address, Size);
+
   *Dest = Storage;
+
   return EFI_SUCCESS;
 }

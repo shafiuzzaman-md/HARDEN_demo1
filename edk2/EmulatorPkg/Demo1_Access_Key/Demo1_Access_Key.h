@@ -71,7 +71,7 @@ EFIAPI
 ///
 struct _Demo1_Access_Key_PROTOCOL {
   DRVR_FUNC_CB_TYPE1                      Demo1GenerateAccessKey;
- // DRVR_FUNC_CB_TYPE2                      Demo1ValidateAccessKey;
+  DRVR_FUNC_CB_TYPE2                      Demo1ValidateAccessKey;
   EFI_EVENT                               Demo1_Ready_To_Lock_Event;
 };
 
