@@ -3611,42 +3611,81 @@ AsciiStrHexToBytes (
   return RETURN_SUCCESS;
 }
 
+
 void invalid_hexadecimal_character_should_RETURN_UNSUPPORTED (){
-  CHAR8  *String;
+  CHAR8 *String = malloc(sizeof(CHAR8));
   UINTN   Length;
   UINT8   Buffer;
   UINTN   MaxBufferSize;
   RETURN_STATUS status;
+  int ASCII_RSIZE_MAX = MAX_INT64;
+
   klee_make_symbolic(&Length, sizeof(UINTN), "Length");
   klee_make_symbolic(&MaxBufferSize, sizeof(UINTN), "MaxBufferSize");
-  String = "gg";
+  klee_make_symbolic(String, sizeof(CHAR8), "String");
+  //klee_assume(Length > 0 && String != NULL && Buffer != NULL && (Length & BIT0) == 0 && (MaxBufferSize >= Length / 2));
+  klee_assume(Length > 0);
+  klee_assume(String != NULL);
+  klee_assume(Buffer != NULL);
+  klee_assume(Length <= ASCII_RSIZE_MAX);
+  klee_assume(MaxBufferSize >= Length / 2);
+  klee_assume((Length & BIT0) == 0);
+
   status = AsciiStrHexToBytes(String, Length, Buffer, MaxBufferSize);
-  klee_assert( status != RETURN_SUCCESS);
+  klee_assert( status == RETURN_UNSUPPORTED);
+  //klee_assert( status != RETURN_SUCCESS);
 }
 
-void test_all_outputs (){
-  CHAR8  *String = malloc(sizeof(CHAR8));
+
+//RETURN_SUCCESS           Buffer is translated from String.
+void isBufferTranslatedFromString(){
+  CHAR8 *String = malloc(sizeof(CHAR8));
   UINTN   Length;
   UINT8   Buffer;
   UINTN   MaxBufferSize;
   RETURN_STATUS status;
-  klee_make_symbolic(String, sizeof(CHAR8), "String");
+  int ASCII_RSIZE_MAX = MAX_INT64;
   klee_make_symbolic(&Length, sizeof(UINTN), "Length");
   klee_make_symbolic(&MaxBufferSize, sizeof(UINTN), "MaxBufferSize");
+  String = "0f";
+  klee_assume(Length > 0);
+  klee_assume(Buffer != NULL);
+  klee_assume(Length <= ASCII_RSIZE_MAX);
+  klee_assume(MaxBufferSize >= Length / 2);
+  klee_assume((Length & BIT0) == 0);
   status = AsciiStrHexToBytes(String, Length, Buffer, MaxBufferSize);
-  klee_assert( status != RETURN_SUCCESS);
-  klee_assert( status != RETURN_INVALID_PARAMETER);
-  klee_assert( status != RETURN_BUFFER_TOO_SMALL);
-  klee_assert( status != RETURN_UNSUPPORTED);
+  klee_assert( status == RETURN_SUCCESS);
+}
+
+//RETURN_INVALID_PARAMETER If Length is not multiple of 2
+void odd_length_should_RETURN_INVALID_PARAMETER(){
+   CHAR8 *String = malloc(sizeof(CHAR8));
+  UINTN   Length;
+  UINT8   Buffer;
+  UINTN   MaxBufferSize;
+  RETURN_STATUS status;
+  int ASCII_RSIZE_MAX = MAX_INT64;
+  //klee_make_symbolic(&Length, sizeof(UINTN), "Length");
+  klee_make_symbolic(&MaxBufferSize, sizeof(UINTN), "MaxBufferSize");
+  klee_make_symbolic(String, sizeof(CHAR8), "String");
+  Length = 1;
+  klee_assume(Buffer != NULL);
+  klee_assume(Length <= ASCII_RSIZE_MAX);
+  klee_assume(MaxBufferSize >= Length / 2);
+  //klee_assume((Length & BIT0) == 0);
+  status = AsciiStrHexToBytes(String, Length, Buffer, MaxBufferSize);
+  klee_assert( status == RETURN_INVALID_PARAMETER);
 }
 
 void verify_AsciiStrHexToBytes(){
   //null_string_should_RETURN_INVALID_PARAMETER();
  // null_data_should_RETURN_INVALID_PARAMETER();
-  //odd_length_should_RETURN_INVALID_PARAMETER();
+  //
   //length_greater_than_PcdMaximumAsciiStringLength_RETURN_INVALID_PARAMETER();
-  invalid_hexadecimal_character_should_RETURN_UNSUPPORTED ();
+  //invalid_hexadecimal_character_should_RETURN_UNSUPPORTED ();
   //test_all_outputs();
+  //isBufferTranslatedFromString();
+  odd_length_should_RETURN_INVALID_PARAMETER();
 }
 
 
